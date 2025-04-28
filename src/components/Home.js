@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { createGoogleToken, createLogin,refreshAccessToken } from "../features/auth/authSlice";
 import {useNavigate} from "react-router-dom"; // make sure createLogin is also imported
 
-const drawerWidth = 240;
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
 export default function Home() {

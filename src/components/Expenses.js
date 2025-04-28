@@ -19,7 +19,6 @@ import {useFilterContext} from "./FilterContext";
 import CustomDateFilter from "./CustomDateFilter";
 import Sidebar from "./PermanentDrawerLeft";
 
-const drawerWidth = 240;
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
 const formatDate = (dateString) => {

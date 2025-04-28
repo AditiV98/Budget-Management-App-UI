@@ -3,12 +3,12 @@ import axios from "axios";
 
 const API_URL = "http://localhost:8000/dashboard"
 
-export const fetchDashboard = createAsyncThunk("dashboard/fetchDashboard", async ({ startDate, endDate }, { rejectWithValue }) => {
+export const fetchDashboard = createAsyncThunk("dashboard/fetchDashboard", async ({accountId, startDate, endDate }, { rejectWithValue }) => {
     try {
         const token = localStorage.getItem("accessToken");
 
         const response = await axios.get(`${API_URL}`, {
-            params: { startDate, endDate }, // ✅ Correctly formatted query params
+            params: { accountId,startDate, endDate }, // ✅ Correctly formatted query params
             headers: {
                 Authorization: `Bearer ${token}`,
             },

@@ -18,8 +18,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import PermanentDrawerLeft from "./PermanentDrawerLeft";
 import Sidebar from "./PermanentDrawerLeft";
 
-
-const drawerWidth = 240;
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
 const accountColors = {
