@@ -19,7 +19,6 @@ import CustomDateFilter from "./CustomDateFilter";
 import FilterDropdown from "./FilterDropdown";
 import Sidebar from "./PermanentDrawerLeft";
 
-const drawerWidth = 240;
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
 const formatDate = (dateString) => {
@@ -109,6 +108,10 @@ export default function Transactions() {
   const [typeFilter, setTypeFilter] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState([]);
 
+  const [selectedMonthNum, setSelectedMonthNum] = useState(dayjs().month()); // month index (0-11)
+  const [selectedYear, setSelectedYear] = useState(dayjs().year()); // e.g., 2024
+  const [isCustomMode, setIsCustomMode] = useState(false);
+
 
   useEffect(() => {
     if (selectedMonth?.startDate && selectedMonth?.endDate) {
@@ -129,23 +132,13 @@ export default function Transactions() {
     }
   }, [dispatch, selectedMonth, typeFilter, categoryFilter]);
 
-
-  const handleMonthChange = (event) => {
-    const value = event.target.value;
-    console.log("Selected value:", value); // Debug log
-
-    if (value === "custom") {
-      setShowCustomFilter(true);
-    } else {
-      setShowCustomFilter(false);
-      updateMonth(value); // Handle predefined months
+  useEffect(() => {
+    if (!isCustomMode && selectedYear && selectedMonthNum >= 0) {
+      const startDate = dayjs().year(selectedYear).month(selectedMonthNum).startOf('month').format('YYYY-MM-DD');
+      const endDate = dayjs().year(selectedYear).month(selectedMonthNum).endOf('month').format('YYYY-MM-DD');
+      updateMonth({ startDate, endDate });
     }
-  };
-
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const month = dayjs().month(i).format("MMMM YYYY");
-    return { value: dayjs().month(i).startOf("month").format("YYYY-MM-DD"), label: month };
-  });
+  }, [selectedMonthNum, selectedYear, isCustomMode]); // Note: depend on isCustomMode
 
   useEffect(() => {
     if (accounts.length === 0) {  // Fetch only if accounts are empty
@@ -355,7 +348,7 @@ export default function Transactions() {
         <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={handleOpen}
+            onClick={() => handleOpen(null)}
             sx={{
               background: "linear-gradient(90deg, #5c6bc0, #7986cb)",
               color: "white",
@@ -363,6 +356,7 @@ export default function Transactions() {
               padding: "10px 24px",
               textTransform: "none",
               fontSize: "16px",
+              mr: 2,
               fontWeight: "bold",
               boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
               transition: "0.3s ease-in-out",
@@ -383,6 +377,7 @@ export default function Transactions() {
                   padding: "10px 24px",
                   textTransform: "none",
                   fontSize: "16px",
+                  mr: 2,
                   fontWeight: "bold",
                   boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
                   transition: "0.3s ease-in-out",
@@ -394,33 +389,86 @@ export default function Transactions() {
           Upload CSV
         </Button>
 
-        <Select
-            value={selectedMonth?.startDate || ""}
-            onChange={handleMonthChange}
-            sx={{
-              width: 220,
-              background: "linear-gradient(135deg, #fff, #fce4ec)",
-              borderRadius: "8px",
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-              "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
-            }}
-        >
-          {months.map((month) => (
-              <MenuItem key={month.value} value={month.value}>{month.label}</MenuItem>
-          ))}
-          <MenuItem value="custom">Custom Date</MenuItem>
-        </Select>
-        {showCustomFilter && (
-            <Box sx={{ position: "absolute", top: "110%", right: 0, zIndex: 10 }}>
-              <CustomDateFilter
-                  onApply={(dates) => {
-                    updateMonth(dates);
-                    setShowCustomFilter(false);
-                  }}
-                  onCancel={() => setShowCustomFilter(false)}
-              />
-            </Box>
-        )}
+       {/* Month Dropdown */}
+<Select
+  value={selectedMonthNum}
+  onChange={(e) => setSelectedMonthNum(parseInt(e.target.value))}
+  sx={{
+    width: 150,
+    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    borderRadius: "8px",
+    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+    mr: 2,
+    "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
+  }}
+>
+  {Array.from({ length: 12 }, (_, i) => (
+    <MenuItem key={i} value={i}>
+      {dayjs().month(i).format("MMMM")}
+    </MenuItem>
+  ))}
+</Select>
+
+{/* Year Dropdown */}
+<Select
+  value={selectedYear}
+  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+  sx={{
+    width: 120,
+    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    borderRadius: "8px",
+    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+    mr: 2,
+    "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
+  }}
+>
+  {Array.from({ length: 5 }, (_, i) => {
+    const year = dayjs().year() - i;
+    return <MenuItem key={year} value={year}>{year}</MenuItem>;
+  })}
+</Select>
+
+{/* Custom Date Option */}
+<Select
+ value={isCustomMode ? "custom" : ""}
+ onChange={(e) => {
+   const isCustom = e.target.value === "custom";
+   setIsCustomMode(isCustom);
+   setShowCustomFilter(isCustom);
+ }}
+  displayEmpty
+  sx={{
+    width: 150,
+    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    borderRadius: "8px",
+    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+    "& .MuiSelect-select": {
+      padding: "10px",
+      fontWeight: "bold",
+      color: "#333",
+    },
+  }}
+>
+  <MenuItem value="">Default</MenuItem>
+  <MenuItem value="custom">Custom Date</MenuItem>
+</Select>
+
+{/* Render Custom Date Picker */}
+{showCustomFilter && (
+  <Box sx={{ position: "absolute", top: "110%", right: 0, zIndex: 10 }}>
+    <CustomDateFilter
+      onApply={(dates) => {
+        updateMonth(dates);
+        setShowCustomFilter(false);
+        setIsCustomMode(true); // Stay in custom mode
+      }}
+      onCancel={() => {
+        setShowCustomFilter(false);
+        setIsCustomMode(false);
+      }}
+    />
+  </Box>
+)}
       </Box>
 
       {/* Transactions Table */}

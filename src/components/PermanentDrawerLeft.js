@@ -4,8 +4,9 @@ import { Box, Drawer, CssBaseline, List, Typography, IconButton, Tooltip, Divide
 import { Home, ReceiptLong, Savings, Person, Settings, Menu, ChevronLeft, AccountBalanceWallet } from '@mui/icons-material';
 import { useLocation, useNavigate } from "react-router-dom";
 import UserMenu from "./UserMenu";
+import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 
-const drawerWidth = 240; // Slightly wider for better spacing
+const drawerWidth = 285; // Slightly wider for better spacing
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function Sidebar() {
     { name: "Transactions", icon: <AccountBalanceWallet />, path: "/transactions" },
     { name: "Expenses", icon: <ReceiptLong />, path: "/expenses" },
     { name: "Savings", icon: <Savings />, path: "/savings" },
+    { name: "Recurring Transactions", icon: <EventRepeatIcon />, path: "/recurring-transactions" },
     { name: "My Account", icon: <Person />, path: "/my-account" },
     { name: "Settings", icon: <Settings />, path: "/settings" },
   ];

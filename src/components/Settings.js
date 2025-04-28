@@ -3,7 +3,6 @@ import PermanentDrawerLeft from "./PermanentDrawerLeft";
 import React from "react";
 import Sidebar from "./PermanentDrawerLeft";
 
-const drawerWidth = 240;
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
 
