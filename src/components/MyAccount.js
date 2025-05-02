@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Card, CardContent, Typography, Grid, Chip,DialogActions } from "@mui/material";
+import { Box, Card, CardContent, Typography, Grid, Chip,DialogActions,Divider } from "@mui/material";
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import WalletIcon from '@mui/icons-material/Wallet';
@@ -152,90 +152,128 @@ const MyAccount = () => {
       </Box>
 
        {/* Add Account Dialog */}
-        <Dialog
-            open={open} onClose={() => setOpen(false)}
-            sx={{
-                "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" }, // Blurred background
-                "& .MuiPaper-root": {
-                    borderRadius: "12px",
-                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
-                    backgroundColor: "rgba(255, 255, 255, 0.85)",
-                    backdropFilter: "blur(10px)",
-                }
-            }}
+       <Dialog
+  open={open}
+  onClose={() => setOpen(false)}
+  fullWidth
+  sx={{
+    "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
+    "& .MuiPaper-root": {
+      borderRadius: "16px",
+      boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
+      backgroundColor: "rgba(255, 255, 255, 0.9)",
+      backdropFilter: "blur(12px)",
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontWeight: "bold",
+      fontSize: "1.3rem",
+      textAlign: "center",
+      color: "#333",
+    }}
+  >
+    Add New Account
+  </DialogTitle>
+
+  <DialogContent>
+    <Box component="form" noValidate autoComplete="off" sx={{ px: 1 }}>
+      <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, color: "text.primary", fontWeight: 500 }}>
+        Account Details
+      </Typography>
+
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Account Name"
             fullWidth
-        >
-
-        <DialogTitle>Add New Account</DialogTitle>
-        <DialogContent>
-          <TextField 
-            label="Account Name" fullWidth margin="dense"
-            value={newAccount.name} onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })}
+            value={newAccount.name}
+            onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })}
           />
-
-          <FormControl fullWidth margin="dense">
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
             <InputLabel>Type</InputLabel>
             <Select
               value={newAccount.type}
+              label="Type"
               onChange={(e) => setNewAccount({ ...newAccount, type: e.target.value })}
             >
-              {accountTypes.map((type) => <MenuItem key={type} value={type}>{type}</MenuItem>)}
+              {accountTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            label="Initial Balance (₹)"
+            type="number"
+            fullWidth
+            value={newAccount.balance}
+            onChange={(e) => setNewAccount({ ...newAccount, balance: parseFloat(e.target.value) || 0 })}
+          />
+        </Grid>
+      </Grid>
 
-            <TextField
-                label="Initial Balance (₹)" type="number" fullWidth margin="dense"
-                value={newAccount.balance}
-                onChange={(e) => setNewAccount({ ...newAccount, balance: parseFloat(e.target.value) || 0 })}
-            />
+      <Divider sx={{ my: 3 }} />
 
-          {/* Expense Categories */}
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Expense Categories</InputLabel>
-            <Select
-              multiple
-              value={newAccount.expenseCategories}
-              onChange={(e) => setNewAccount({ ...newAccount, expenseCategories: e.target.value })}
-              renderValue={(selected) => selected.join(", ")}
-            >
-              {expenseCategories.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-            </Select>
-          </FormControl>
-          {/* <Box sx={{ display: "flex", gap: 1, alignItems: "center", marginTop: 2 }}>
-            <TextField 
-              label="Custom Expense Category" fullWidth 
-              value={customExpense} 
-              onChange={(e) => setCustomExpense(e.target.value)}
-            />
-            <Button variant="contained" onClick={handleAddCustomExpense}>Add</Button>
-          </Box> */}
+      <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
+        Expense Categories
+      </Typography>
+      <FormControl fullWidth>
+        <InputLabel>Expense Categories</InputLabel>
+        <Select
+          multiple
+          value={newAccount.expenseCategories}
+          onChange={(e) => setNewAccount({ ...newAccount, expenseCategories: e.target.value })}
+          renderValue={(selected) => selected.join(", ")}
+        >
+          {expenseCategories.map((cat) => (
+            <MenuItem key={cat} value={cat}>
+              {cat}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-          {/* Saving Categories */}
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Saving Categories</InputLabel>
-            <Select
-              multiple
-              value={newAccount.savingCategories}
-              onChange={(e) => setNewAccount({ ...newAccount, savingCategories: e.target.value })}
-              renderValue={(selected) => selected.join(", ")}
-            >
-              {savingsCategories.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-            </Select>
-          </FormControl>
-          {/* <Box sx={{ display: "flex", gap: 1, alignItems: "center", marginTop: 2 }}>
-            <TextField 
-              label="Custom Saving Category" fullWidth 
-              value={customSaving} 
-              onChange={(e) => setCustomSaving(e.target.value)}
-            />
-            <Button variant="contained" onClick={handleAddCustomSaving}>Add</Button>
-          </Box> */}
+      <Divider sx={{ my: 3 }} />
 
-          <Button fullWidth variant="contained" color="primary" sx={{ marginTop: 2 }} onClick={handleAddAccount}>
-            Save Account
-          </Button>
-        </DialogContent>
-      </Dialog>
+      <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
+        Saving Categories
+      </Typography>
+      <FormControl fullWidth>
+        <InputLabel>Saving Categories</InputLabel>
+        <Select
+          multiple
+          value={newAccount.savingCategories}
+          onChange={(e) => setNewAccount({ ...newAccount, savingCategories: e.target.value })}
+          renderValue={(selected) => selected.join(", ")}
+        >
+          {savingsCategories.map((cat) => (
+            <MenuItem key={cat} value={cat}>
+              {cat}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Button
+        fullWidth
+        variant="contained"
+        color="primary"
+        sx={{ mt: 4, py: 1.2, fontWeight: "bold" }}
+        onClick={handleAddAccount}
+      >
+        Save Account
+      </Button>
+    </Box>
+  </DialogContent>
+</Dialog>
+
 
       {status === "loading" ? (
         <p>Loading accounts...</p>
@@ -321,46 +359,145 @@ const MyAccount = () => {
           )}
 
           {/* Edit Account Dialog */}
-          <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
-              <DialogTitle>Edit Account</DialogTitle>
-              <DialogContent>
-                  {editedAccount && (
-                      <>
-                          <TextField label="Account Name" value={editedAccount.name}
-                                     onChange={(e) => setEditedAccount({ ...editedAccount, name: e.target.value })} fullWidth/>
-                          <FormControl fullWidth>
-                              <InputLabel>Type</InputLabel>
-                              <Select value={editedAccount.type}
-                                      onChange={(e) => setEditedAccount({ ...editedAccount, type: e.target.value })}>
-                                  {accountTypes.map((type) => <MenuItem key={type} value={type}>{type}</MenuItem>)}
-                              </Select>
-                          </FormControl>
-                          <TextField label="Balance" type="number" value={editedAccount.balance}
-                                     onChange={(e) => setEditedAccount({ ...editedAccount, balance: parseFloat(e.target.value) })} fullWidth/>
-                          <FormControl fullWidth>
-                              <InputLabel>Expense Categories</InputLabel>
-                              <Select multiple value={editedAccount.expenseCategories}
-                                      onChange={(e) => setEditedAccount({ ...editedAccount, expenseCategories: e.target.value })}
-                                      renderValue={(selected) => selected.join(", ")}>
-                                  {expenseCategories.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-                              </Select>
-                          </FormControl>
-                          <FormControl fullWidth>
-                              <InputLabel>Saving Categories</InputLabel>
-                              <Select multiple value={editedAccount.savingCategories}
-                                      onChange={(e) => setEditedAccount({ ...editedAccount, savingCategories: e.target.value })}
-                                      renderValue={(selected) => selected.join(", ")}>
-                                  {savingsCategories.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-                              </Select>
-                          </FormControl>
-                      </>
-                  )}
-              </DialogContent>
-              <DialogActions>
-                  <Button onClick={() => setOpenEditDialog(false)} color="secondary">Cancel</Button>
-                  <Button onClick={handleSave} color="primary">Save Changes</Button>
-              </DialogActions>
-          </Dialog>
+          <Dialog
+  open={openEditDialog}
+  onClose={() => setOpenEditDialog(false)}
+  fullWidth
+  sx={{
+    "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
+    "& .MuiPaper-root": {
+      borderRadius: "16px",
+      boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
+      backgroundColor: "rgba(255, 255, 255, 0.9)",
+      backdropFilter: "blur(12px)",
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontWeight: "bold",
+      fontSize: "1.3rem",
+      textAlign: "center",
+      color: "#333",
+    }}
+  >
+    Edit Account
+  </DialogTitle>
+
+  <DialogContent>
+    {editedAccount && (
+      <Box component="form" noValidate autoComplete="off" sx={{ px: 1 }}>
+        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, color: "text.primary", fontWeight: 500 }}>
+          Account Details
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Account Name"
+              fullWidth
+              value={editedAccount.name}
+              onChange={(e) => setEditedAccount({ ...editedAccount, name: e.target.value })}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={editedAccount.type}
+                label="Type"
+                onChange={(e) => setEditedAccount({ ...editedAccount, type: e.target.value })}
+              >
+                {accountTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Balance"
+              type="number"
+              fullWidth
+              value={editedAccount.balance}
+              onChange={(e) =>
+                setEditedAccount({ ...editedAccount, balance: parseFloat(e.target.value) || 0 })
+              }
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
+          Expense Categories
+        </Typography>
+        <FormControl fullWidth>
+          <InputLabel>Expense Categories</InputLabel>
+          <Select
+            multiple
+            value={editedAccount.expenseCategories}
+            onChange={(e) =>
+              setEditedAccount({ ...editedAccount, expenseCategories: e.target.value })
+            }
+            renderValue={(selected) => selected.join(", ")}
+          >
+            {expenseCategories.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
+          Saving Categories
+        </Typography>
+        <FormControl fullWidth>
+          <InputLabel>Saving Categories</InputLabel>
+          <Select
+            multiple
+            value={editedAccount.savingCategories}
+            onChange={(e) =>
+              setEditedAccount({ ...editedAccount, savingCategories: e.target.value })
+            }
+            renderValue={(selected) => selected.join(", ")}
+          >
+            {savingsCategories.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+    )}
+  </DialogContent>
+
+  <DialogActions sx={{ px: 3, pb: 2 }}>
+    <Button
+      onClick={() => setOpenEditDialog(false)}
+      variant="outlined"
+      color="secondary"
+      sx={{ borderRadius: 2 }}
+    >
+      Cancel
+    </Button>
+    <Button
+      onClick={handleSave}
+      variant="contained"
+      color="primary"
+      sx={{ borderRadius: 2, fontWeight: "bold" }}
+    >
+      Save Changes
+    </Button>
+  </DialogActions>
+</Dialog>
+
 
       </Grid>
         )}

@@ -11,7 +11,6 @@ export const FilterProvider = ({ children }) => {
     });
 
     const updateMonth = (monthOrRange) => {
-        console.log("monthOrRange:",monthOrRange)
         if (typeof monthOrRange === "object" && monthOrRange.startDate && monthOrRange.endDate) {
             // Handle Custom Date Range
             setSelectedMonth({

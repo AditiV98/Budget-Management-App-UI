@@ -17,14 +17,12 @@ export default function Home() {
         scope: "openid email profile",
         onSuccess: async (codeResponse) => {
             const { code } = codeResponse;
-            console.log("Auth Code:", code);
 
             if (code) {
                 try {
                     // Step 1: Get Google ID token
                     const resultAction = await dispatch(createGoogleToken({ code }));
                     const idToken = resultAction.payload?.id_token;
-                    console.log("Google ID Token:", idToken);
 
                     if (idToken) {
                         // Step 2: Login with backend to get refreshToken
@@ -37,8 +35,7 @@ export default function Home() {
                         );
 
                         const refreshToken = loginAction.payload?.refreshToken;
-                        console.log("Refresh Token:", refreshToken);
-
+                    
                         if (refreshToken) {
                             const accessAction = await dispatch(
                                 refreshAccessToken({ refreshToken })
@@ -47,7 +44,6 @@ export default function Home() {
                             const accessToken = accessAction.payload?.accessToken;
 
                             if (accessToken) {
-                                // ✅ Navigate to dashboard on frontend
                                 navigate("/dashboard");
                             }
                         }

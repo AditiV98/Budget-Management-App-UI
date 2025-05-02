@@ -18,6 +18,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import CustomDateFilter from "./CustomDateFilter";
 import FilterDropdown from "./FilterDropdown";
 import Sidebar from "./PermanentDrawerLeft";
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
@@ -117,7 +118,7 @@ export default function Transactions() {
     if (selectedMonth?.startDate && selectedMonth?.endDate) {
       const params = new URLSearchParams({
         startDate: selectedMonth.startDate,
-        endDate: selectedMonth.endDate
+        endDate: selectedMonth.endDate,
       });
 
       if (typeFilter?.length) {
@@ -326,6 +327,32 @@ export default function Transactions() {
     });
   };
 
+  const handleCSVDownload = () => {
+    if (!transactions || transactions.length === 0) return;
+  
+    const csvData = transactions.map(txn => ({
+      Account: txn?.account?.name || "",
+      Amount: txn.amount,
+      Type: txn.type,
+      Category: txn.category,
+      Description: txn.description,
+      TransactionDate: formatDate(txn.transactionDate),
+      CreatedAt: formatDate(txn.createdAt),
+    }));
+  
+    const csv = Papa.unparse(csvData);
+  
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "transactions.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
+
   return (
       <Box sx={{ display: "flex" }}>
         <Sidebar />
@@ -387,6 +414,26 @@ export default function Transactions() {
                   }
                 }}>
           Upload CSV
+        </Button>
+
+        <Button variant="contained" startIcon={<FileDownloadIcon />} onClick={handleCSVDownload}
+                sx={{
+                  background: "linear-gradient(90deg, #5c6bc0, #7986cb)",
+                  color: "white",
+                  borderRadius: "12px",
+                  padding: "10px 24px",
+                  textTransform: "none",
+                  fontSize: "16px",
+                  mr: 2,
+                  fontWeight: "bold",
+                  boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
+                  transition: "0.3s ease-in-out",
+                  "&:hover": {
+                    background: "linear-gradient(90deg, #3f51b5, #5c6bc0)",
+                    transform: "scale(1.05)"
+                  }
+                }}>
+          Download CSV
         </Button>
 
        {/* Month Dropdown */}

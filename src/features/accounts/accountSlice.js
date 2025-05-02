@@ -84,7 +84,6 @@ const accountSlice = createSlice({
     builder
       // Create Account
       .addCase(createAccount.fulfilled, (state, action) => {
-        console.log("Create Account Payload:", action.payload);
         if (!Array.isArray(state.accounts)) {
           state.accounts = []; // Ensure transactions is always an array
         }
@@ -120,7 +119,6 @@ const accountSlice = createSlice({
 
         // Update Account
         .addCase(updateAccount.fulfilled, (state, action) => {
-          console.log("Updated Account Payload:", action.payload);
           const updatedAccount = action.payload.data;
 
           const index = state.accounts.findIndex(acc => acc.id === updatedAccount.id);

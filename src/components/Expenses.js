@@ -70,7 +70,6 @@ export default function Expenses() {
 
     const handleMonthChange = (event) => {
         const value = event.target.value;
-        console.log("Selected value:", value); // Debug log
 
         if (value === "custom") {
             setShowCustomFilter(true);

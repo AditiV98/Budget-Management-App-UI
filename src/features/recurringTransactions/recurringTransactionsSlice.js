@@ -74,6 +74,31 @@ export const deleteRecurringTransaction = createAsyncThunk("recurringTransaction
     }
 });
 
+export const skipRecurringTransaction = createAsyncThunk(
+    "recurringTransaction/skipTransaction",
+    async (id, { rejectWithValue }) => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await axios.post(
+          `${API_URL}/${id}/skip`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data;
+      } catch (error) {
+        return rejectWithValue(
+          error.response?.data?.error?.message || "Failed to skip recurring transaction"
+        );
+      }
+    }
+  );
+  
+
+
 const recurringTransactionSlice = createSlice({
     name:"recurringTransactions",
     initialState:{recurringTransactions:[],selectedRecurringTransaction: null,status: "idle",error:null},
@@ -97,7 +122,6 @@ const recurringTransactionSlice = createSlice({
             state.status = "loading";
         })
         .addCase(fetchRecurringTransaction.fulfilled, (state, action) => {
-            console.log("Payload:", action.payload.data);
             state.status = "succeeded";
             state.recurringTransactions = action.payload.data;
             state.error = null;
@@ -137,7 +161,13 @@ const recurringTransactionSlice = createSlice({
         })
         .addCase(deleteRecurringTransaction.rejected, (state, action) => {
             state.error = action.payload;
-        });
+        })
+        .addCase(skipRecurringTransaction.fulfilled, (state, action) => {
+            state.error = null;
+        })
+        .addCase(skipRecurringTransaction.rejected, (state, action) => {
+            state.error = action.payload;
+        })
     },
 });
 

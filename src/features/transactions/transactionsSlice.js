@@ -99,7 +99,6 @@ const transactionSlice=createSlice({
                 state.status = "loading";
             })
             .addCase(fetchTransactions.fulfilled, (state, action) => {
-                console.log("Payload:", action.payload.data);
                 state.status = "succeeded";
                 state.transactions = action.payload.data;
                 state.error = null;

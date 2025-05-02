@@ -64,12 +64,9 @@ export default function RecurringTransaction(){
   const [selectedType, setSelectedType] = useState("");
   const [filteredCategories, setFilteredCategories] = useState([]);
 
-    useEffect(()=>{
-        if (recurringTransactions.length === 0){
-            dispatch(fetchRecurringTransaction());
-
-        }
-    },[dispatch,recurringTransactions]);
+  useEffect(() => {
+    dispatch(fetchRecurringTransaction());
+  }, [dispatch]);
 
     useEffect(()=>{
         if (accounts.length ===0){
@@ -174,17 +171,14 @@ export default function RecurringTransaction(){
           }
           setFilteredCategories(categories);
         } else {
-        setIsEditMode(false); // ✅ Fix: explicitly reset edit mode
+        setIsEditMode(false);
           setSelectedTransaction(null);
           setSelectedAccount(null);
           setSelectedType("");
           setFilteredCategories([]);
         }
 
-        console.log("handleOpen called with", transaction);
-console.log("isEditMode set to", transaction ? true : false);
-      
-        setOpen(true); // ✅ Keep this here
+        setOpen(true);
       };
       
       const handleClose = () => {

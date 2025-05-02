@@ -13,7 +13,6 @@ export const createGoogleToken = createAsyncThunk(
                 withCredentials: true, // allows server to set HttpOnly cookie
             });
 
-            console.log("Google token response:", response.data);
             return {
                 id_token: response.data.data.id_token,
             };
