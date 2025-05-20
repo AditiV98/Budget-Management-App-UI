@@ -94,7 +94,7 @@ export default function Transactions() {
   const transactions = useSelector((state) => state.transaction?.transactions) || [];
   const accounts = useSelector((state) => state.account?.accounts) || [];
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(12);
   const [open, setOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -354,23 +354,21 @@ export default function Transactions() {
   
 
   return (
-      <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
         <Sidebar />
         <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              px: 3,
-              pt: 5,
-              background: pageBackground,
-              minHeight: "100vh",
-            }}
-        >
+              component="main"
+              sx={{
+                flexGrow: 1,
+                overflow: "auto",
+                background: pageBackground,
+                px: 1,
+                pt: 8, 
+              }}
+          >
 
-    <Box sx={{ height: "calc(100vh - 64px)", display: "flex", flexDirection: "column", p: 5}}>
-      {/* Month Selector - Moved to Top Right */}
-      {/* Add Transaction Button */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3, position: "relative"  }}>
+    <Box sx={{ height: "calc(100vh - 80px)", display: "flex", flexDirection: "column"}}>
+    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexWrap: 'wrap', position: 'relative' }}>
         {/* Styled Button */}
         <Button
             variant="contained"
@@ -379,12 +377,14 @@ export default function Transactions() {
             sx={{
               background: "linear-gradient(90deg, #5c6bc0, #7986cb)",
               color: "white",
-              borderRadius: "12px",
-              padding: "10px 24px",
+              borderRadius: "6px",               // Match select's border radius
+              height: "30px",                    // Match select's height
+              minWidth: "110px",                 // Optional: similar to Select width
+              padding: "2px 8px",                // Smaller padding
               textTransform: "none",
-              fontSize: "16px",
-              mr: 2,
+              fontSize: "0.75rem",               // Match Select text
               fontWeight: "bold",
+              mr: 2,
               boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
               transition: "0.3s ease-in-out",
               "&:hover": {
@@ -397,42 +397,46 @@ export default function Transactions() {
         </Button>
 
         <Button variant="contained" startIcon={<UploadFileIcon />} onClick={handleOpenCSVDialog}
-                sx={{
-                  background: "linear-gradient(90deg, #5c6bc0, #7986cb)",
-                  color: "white",
-                  borderRadius: "12px",
-                  padding: "10px 24px",
-                  textTransform: "none",
-                  fontSize: "16px",
-                  mr: 2,
-                  fontWeight: "bold",
-                  boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
-                  transition: "0.3s ease-in-out",
-                  "&:hover": {
-                    background: "linear-gradient(90deg, #3f51b5, #5c6bc0)",
-                    transform: "scale(1.05)"
-                  }
-                }}>
+               sx={{
+                background: "linear-gradient(90deg, #5c6bc0, #7986cb)",
+                color: "white",
+                borderRadius: "6px",               // Match select's border radius
+                height: "30px",                    // Match select's height
+                minWidth: "110px",                 // Optional: similar to Select width
+                padding: "2px 8px",                // Smaller padding
+                textTransform: "none",
+                fontSize: "0.75rem",               // Match Select text
+                fontWeight: "bold",
+                mr: 2,
+                boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
+                transition: "0.3s ease-in-out",
+                "&:hover": {
+                  background: "linear-gradient(90deg, #3f51b5, #5c6bc0)",
+                  transform: "scale(1.05)"
+                }
+              }}>
           Upload CSV
         </Button>
 
         <Button variant="contained" startIcon={<FileDownloadIcon />} onClick={handleCSVDownload}
-                sx={{
-                  background: "linear-gradient(90deg, #5c6bc0, #7986cb)",
-                  color: "white",
-                  borderRadius: "12px",
-                  padding: "10px 24px",
-                  textTransform: "none",
-                  fontSize: "16px",
-                  mr: 2,
-                  fontWeight: "bold",
-                  boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
-                  transition: "0.3s ease-in-out",
-                  "&:hover": {
-                    background: "linear-gradient(90deg, #3f51b5, #5c6bc0)",
-                    transform: "scale(1.05)"
-                  }
-                }}>
+               sx={{
+                background: "linear-gradient(90deg, #5c6bc0, #7986cb)",
+                color: "white",
+                borderRadius: "6px",               // Match select's border radius
+                height: "30px",                    // Match select's height
+                minWidth: "110px",                 // Optional: similar to Select width
+                padding: "2px 8px",                // Smaller padding
+                textTransform: "none",
+                fontSize: "0.75rem",               // Match Select text
+                fontWeight: "bold",
+                mr: 2,
+                boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
+                transition: "0.3s ease-in-out",
+                "&:hover": {
+                  background: "linear-gradient(90deg, #3f51b5, #5c6bc0)",
+                  transform: "scale(1.05)"
+                }
+              }}>
           Download CSV
         </Button>
 
@@ -441,12 +445,33 @@ export default function Transactions() {
   value={selectedMonthNum}
   onChange={(e) => setSelectedMonthNum(parseInt(e.target.value))}
   sx={{
-    width: 150,
+    width: 110,
+    height: 30,
     background: "linear-gradient(135deg, #fff, #fce4ec)",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    mr: 2,
-    "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
+    borderRadius: "6px",
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    mr: 1,
+    p:1,
+    '& .MuiSelect-select': {
+      padding: '1px 1px',
+      fontSize: '0.75rem',
+      fontWeight: '500',
+      color: '#333',
+    },
+  }}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        maxHeight: 150, // limit height of dropdown
+        width: 120,     // narrow the dropdown width
+        fontSize: '0.75rem',
+        '& .MuiMenuItem-root': {
+          minHeight: '30px',
+          fontSize: '0.75rem',
+          px: 1,
+        },
+      },
+    },
   }}
 >
   {Array.from({ length: 12 }, (_, i) => (
@@ -461,12 +486,33 @@ export default function Transactions() {
   value={selectedYear}
   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
   sx={{
-    width: 120,
+    width: 110,
+    height: 30,
     background: "linear-gradient(135deg, #fff, #fce4ec)",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    mr: 2,
-    "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
+    borderRadius: "6px",
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    mr: 1,
+    p:1,
+    '& .MuiSelect-select': {
+      padding: '1px 1px',
+      fontSize: '0.75rem',
+      fontWeight: '500',
+      color: '#333',
+    },
+  }}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        maxHeight: 150, // limit height of dropdown
+        width: 120,     // narrow the dropdown width
+        fontSize: '0.75rem',
+        '& .MuiMenuItem-root': {
+          minHeight: '30px',
+          fontSize: '0.75rem',
+          px: 1,
+        },
+      },
+    },
   }}
 >
   {Array.from({ length: 5 }, (_, i) => {
@@ -485,16 +531,34 @@ export default function Transactions() {
  }}
   displayEmpty
   sx={{
-    width: 150,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    "& .MuiSelect-select": {
-      padding: "10px",
-      fontWeight: "bold",
-      color: "#333",
-    },
-  }}
+              width: 110,
+              height: 30,
+              background: "linear-gradient(135deg, #fff, #fce4ec)",
+              borderRadius: "6px",
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+              mr: 1,
+              p:1,
+              '& .MuiSelect-select': {
+                padding: '1px 1px',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                color: '#333',
+              },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  maxHeight: 150, // limit height of dropdown
+                  width: 120,     // narrow the dropdown width
+                  fontSize: '0.75rem',
+                  '& .MuiMenuItem-root': {
+                    minHeight: '30px',
+                    fontSize: '0.75rem',
+                    px: 1,
+                  },
+                },
+              },
+            }}
 >
   <MenuItem value="">Default</MenuItem>
   <MenuItem value="custom">Custom Date</MenuItem>
@@ -519,18 +583,18 @@ export default function Transactions() {
       </Box>
 
       {/* Transactions Table */}
-      <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", borderRadius: "10px", overflow: "hidden" }}>
-        <TableContainer sx={{ flexGrow: 1, overflow: "auto" }}>
-          <Table stickyHeader>
+      <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", borderRadius: "10px", overflow: "hidden",fontSize: "0.75rem",p:1 }}>
+        <TableContainer sx={{ flexGrow: 1, overflow: "auto" ,borderRadius: "10px",}}>
+        <Table stickyHeader size="small"> 
             <TableHead>
               <TableRow sx={{ backgroundColor: "#1E88E5" }}>
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
                     style={{ minWidth: column.minWidth }}
-                    sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" }}
+                    sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       {column.label}
 
                       {/* Show FilterDropdown only for "Type" column */}
@@ -565,14 +629,14 @@ export default function Transactions() {
                   sx={{ backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white", "&:hover": { backgroundColor: "#e3f2fd" } }}
                 >
                   {columns.map((column) => (
-                    <TableCell key={column.id}>
+                    <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1 }}>
                       {column.id === "actions" ? (
                         <>
                           <Tooltip title="Edit">
-                            <IconButton onClick={() => handleOpen(row)}><EditIcon color="primary" /></IconButton>
+                            <IconButton onClick={() => handleOpen(row)} sx={{ p: 0.5 }}><EditIcon fontSize="small" color="primary" /></IconButton>
                           </Tooltip>
                           <Tooltip title="Delete">
-                            <IconButton onClick={() => handleDelete(row.id)}><DeleteIcon color="error" /></IconButton>
+                            <IconButton onClick={() => handleDelete(row.id)} sx={{ p: 0.5 }}><DeleteIcon fontSize="small" color="error" /></IconButton>
                           </Tooltip>
                         </>
                       ) : column.id === "account" ? (
@@ -587,7 +651,7 @@ export default function Transactions() {
                 </TableRow>
               ))):(
                   <TableRow>
-                    <TableCell colSpan={columns.length} align="center">
+                    <TableCell colSpan={columns.length} align="center" sx={{ fontSize: "0.65rem" }}>
                       No transactions available.
                     </TableCell>
                   </TableRow>
@@ -597,20 +661,39 @@ export default function Transactions() {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[10]}
+          rowsPerPageOptions={[12]}
           component="div"
           count={transactions.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          sx={{
+            '& .MuiTablePagination-toolbar': {
+              minHeight: '32px',
+              fontSize: '0.65rem',
+            },
+            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+              fontSize: '0.65rem',
+            },
+            '& .MuiInputBase-root': {
+              fontSize: '0.65rem',
+            },
+          }}
         />
       </Paper>
 
       {/* Add/Edit Transaction Modal */}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{isEditMode ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
-        <DialogContent>
+      <Dialog open={open} onClose={handleClose} PaperProps={{
+    sx: {
+      width: '500px', // adjust as needed
+      maxWidth: '90%', // responsive limit
+      fontSize: '12px',
+      height:'600px'
+    },
+  }}>
+        <DialogTitle sx={{ fontSize: '16px' }}>{isEditMode ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
+        <DialogContent sx={{ px: 2, py: 1, fontSize: '8px' }}>
           <TextField
               select
               label="Account"
@@ -619,18 +702,67 @@ export default function Transactions() {
               margin="normal"
               value={selectedTransaction?.accountId || ""}
               onChange={handleChange}
+              InputLabelProps={{
+                sx: {
+                  fontSize: '12px',
+                  "&.Mui-focused": { fontSize: '12px' },
+                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
+                }
+              }}
+              sx={{
+                fontSize: '12px',
+                "& .MuiSelect-select": {
+                  fontSize: '12px',   // font size of selected value inside select input
+                },
+                "& .MuiInputBase-input": {
+                  fontSize: '12px',   // fallback for normal inputs
+                },
+              }} 
           >
             {accounts.map((acc) => (
-                <MenuItem key={acc.id} value={acc.id}>
+                <MenuItem key={acc.id} value={acc.id} sx={{ fontSize: '12px' }}>
                   {acc.name}
                 </MenuItem>
             ))}
           </TextField>
-          <TextField label="Amount" name="amount" type="number" fullWidth margin="normal" value={selectedTransaction?.amount || ""} onChange={handleChange} />
-          <TextField select label="Type" name="type" fullWidth margin="normal" value={selectedTransaction?.type || ""} onChange={handleChange}>
-            <MenuItem value="INCOME">INCOME</MenuItem>
-            <MenuItem value="SAVINGS">SAVINGS</MenuItem>
-            <MenuItem value="EXPENSE">EXPENSE</MenuItem>
+          <TextField 
+          InputLabelProps={{
+            sx: {
+              fontSize: '12px',
+              "&.Mui-focused": { fontSize: '12px' },
+              "&.MuiInputLabel-shrink": { fontSize: '12px' },
+            }
+          }}
+          sx={{
+            fontSize: '12px',
+            "& .MuiSelect-select": {
+              fontSize: '12px',   // font size of selected value inside select input
+            },
+            "& .MuiInputBase-input": {
+              fontSize: '12px',   // fallback for normal inputs
+            },
+          }} 
+            label="Amount" name="amount" type="number" fullWidth margin="normal" value={selectedTransaction?.amount || ""} onChange={handleChange} />
+          <TextField InputLabelProps={{
+                sx: {
+                  fontSize: '12px',
+                  "&.Mui-focused": { fontSize: '12px' },
+                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
+                }
+              }}
+              sx={{
+                fontSize: '12px',
+                "& .MuiSelect-select": {
+                  fontSize: '12px',   // font size of selected value inside select input
+                },
+                "& .MuiInputBase-input": {
+                  fontSize: '12px',   // fallback for normal inputs
+                },
+              }} 
+           select label="Type" name="type" fullWidth margin="normal" value={selectedTransaction?.type || ""} onChange={handleChange}>
+            <MenuItem value="INCOME" sx={{ fontSize: '12px' }}>INCOME</MenuItem>
+            <MenuItem value="SAVINGS" sx={{ fontSize: '12px' }}>SAVINGS</MenuItem>
+            <MenuItem value="EXPENSE" sx={{ fontSize: '12px' }}>EXPENSE</MenuItem>
           </TextField>
           <TextField
               select
@@ -640,10 +772,26 @@ export default function Transactions() {
               margin="normal"
               value={selectedTransaction?.category || ""}
               onChange={handleChange}
+              InputLabelProps={{
+                sx: {
+                  fontSize: '12px',
+                  "&.Mui-focused": { fontSize: '12px' },
+                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
+                }
+              }}
+              sx={{
+                fontSize: '12px',
+                "& .MuiSelect-select": {
+                  fontSize: '12px',   // font size of selected value inside select input
+                },
+                "& .MuiInputBase-input": {
+                  fontSize: '12px',   // fallback for normal inputs
+                },
+              }} 
           >
             {filteredCategories.length > 0 ? (
                 filteredCategories.map((category) => (
-                    <MenuItem key={category} value={category}>
+                    <MenuItem key={category} value={category} sx={{ fontSize: '12px' }}>
                       {category}
                     </MenuItem>
                 ))
@@ -651,7 +799,24 @@ export default function Transactions() {
                 <MenuItem disabled>No categories available</MenuItem>
             )}
           </TextField>
-          <TextField label="Description" name="description" fullWidth margin="normal" value={selectedTransaction?.description || ""} onChange={handleChange} />
+          <TextField 
+          InputLabelProps={{
+            sx: {
+              fontSize: '12px',
+              "&.Mui-focused": { fontSize: '12px' },
+              "&.MuiInputLabel-shrink": { fontSize: '12px' },
+            }
+          }}
+          sx={{
+            fontSize: '12px',
+            "& .MuiSelect-select": {
+              fontSize: '12px',   // font size of selected value inside select input
+            },
+            "& .MuiInputBase-input": {
+              fontSize: '12px',   // fallback for normal inputs
+            },
+          }} 
+           label="Description" name="description" fullWidth margin="normal" value={selectedTransaction?.description || ""} onChange={handleChange} />
           <TextField
               label="Transaction Date"
               name="transactionDate"
@@ -661,8 +826,22 @@ export default function Transactions() {
               value={selectedTransaction?.transactionDate || ""}
               onChange={handleChange}
               InputLabelProps={{
-                shrink: true, // Ensures the label doesn't overlap with the input value
+                shrink: true,
+                sx: {
+                  fontSize: '12px',
+                  "&.Mui-focused": { fontSize: '12px' },
+                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
+                }
               }}
+              sx={{
+                fontSize: '12px',
+                "& .MuiSelect-select": {
+                  fontSize: '12px',   // font size of selected value inside select input
+                },
+                "& .MuiInputBase-input": {
+                  fontSize: '12px',   // fallback for normal inputs
+                },
+              }} 
           />
         </DialogContent>
         <DialogActions>

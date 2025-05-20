@@ -29,6 +29,23 @@ dayjs.extend(isSameOrBefore);
 
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
+
+const compactSelectSx = {
+  width: 120,
+  height: 36,
+  background: 'linear-gradient(135deg, #fff, #fce4ec)',
+  borderRadius: '6px',
+  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+  mr: 1,
+  '& .MuiSelect-select': {
+    padding: '6px 10px',
+    fontSize: '0.85rem',
+    fontWeight: '500',
+    color: '#333',
+  },
+};
+
+
 export default function Dashboard() {
   const dispatch = useDispatch();
   const { dashboard, status, error } = useSelector((state) => state.dashboard || { dashboard: {} });
@@ -222,31 +239,52 @@ useEffect(() => {
   const recentTransactions = getRecentTransactions(transactions);
 
   return (
-      <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
         <Sidebar />
           <Box
               component="main"
               sx={{
-                  flexGrow: 1,
-                  px: 3,
-                  pt: 10,
-                  background: pageBackground,
-                  minHeight: "100vh",
+                flexGrow: 1,
+                overflow: "auto",
+                background: pageBackground,
+                px: 1,
+                pt: 8, // adjust based on AppBar height
               }}
           >
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3, position: "relative"  }}>
+     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexWrap: 'wrap', position: 'relative' }}>
         {/* Account Filter */}
           <Select
             value={selectedAccount}
             onChange={handleAccountChange}
             displayEmpty
             sx={{
-              width: 150,
+              width: 110,
+              height: 30,
               background: "linear-gradient(135deg, #fff, #fce4ec)",
-              borderRadius: "8px",
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-              mr: 2,
-              "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
+              borderRadius: "6px",
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+              mr: 1,
+              p:1,
+              '& .MuiSelect-select': {
+                padding: '1px 1px',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                color: '#333',
+              },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  maxHeight: 150, // limit height of dropdown
+                  width: 120,     // narrow the dropdown width
+                  fontSize: '0.75rem',
+                  '& .MuiMenuItem-root': {
+                    minHeight: '30px',
+                    fontSize: '0.75rem',
+                    px: 1,
+                  },
+                },
+              },
             }}
           >
             <MenuItem value="" disabled>Select Account</MenuItem>
@@ -261,12 +299,33 @@ useEffect(() => {
   value={selectedMonthNum}
   onChange={(e) => setSelectedMonthNum(parseInt(e.target.value))}
   sx={{
-    width: 150,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    mr: 2,
-    "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
+    width: 110,
+              height: 30,
+              background: "linear-gradient(135deg, #fff, #fce4ec)",
+              borderRadius: "6px",
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+              mr: 1,
+              p:1,
+              '& .MuiSelect-select': {
+                padding: '1px 1px',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                color: '#333',
+              },
+  }}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        maxHeight: 150, 
+        width: 120,     
+        fontSize: '0.75rem',
+        '& .MuiMenuItem-root': {
+          minHeight: '30px',
+          fontSize: '0.75rem',
+          px: 1,
+        },
+      },
+    },
   }}
 >
   {Array.from({ length: 12 }, (_, i) => (
@@ -281,12 +340,33 @@ useEffect(() => {
   value={selectedYear}
   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
   sx={{
-    width: 120,
+    width: 110,
+    height: 30,
     background: "linear-gradient(135deg, #fff, #fce4ec)",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    mr: 2,
-    "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
+    borderRadius: "6px",
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    mr: 1,
+    p:1,
+    '& .MuiSelect-select': {
+      padding: '1px 1px',
+      fontSize: '0.75rem',
+      fontWeight: '500',
+      color: '#333',
+    },
+  }}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        maxHeight: 150, // limit height of dropdown
+        width: 120,     // narrow the dropdown width
+        fontSize: '0.75rem',
+        '& .MuiMenuItem-root': {
+          minHeight: '30px',
+          fontSize: '0.75rem',
+          px: 1,
+        },
+      },
+    },
   }}
 >
   {Array.from({ length: 5 }, (_, i) => {
@@ -305,14 +385,32 @@ useEffect(() => {
  }}
   displayEmpty
   sx={{
-    width: 150,
+    width: 110,
+    height: 30,
     background: "linear-gradient(135deg, #fff, #fce4ec)",
-    borderRadius: "8px",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    "& .MuiSelect-select": {
-      padding: "10px",
-      fontWeight: "bold",
-      color: "#333",
+    borderRadius: "6px",
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    mr: 1,
+    p:1,
+    '& .MuiSelect-select': {
+      padding: '1px 1px',
+      fontSize: '0.75rem',
+      fontWeight: '500',
+      color: '#333',
+    },
+  }}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        maxHeight: 150, // limit height of dropdown
+        width: 120,     // narrow the dropdown width
+        fontSize: '0.75rem',
+        '& .MuiMenuItem-root': {
+          minHeight: '30px',
+          fontSize: '0.75rem',
+          px: 1,
+        },
+      },
     },
   }}
 >
@@ -338,95 +436,150 @@ useEffect(() => {
 )}
       </Box>
 
-    <Grid container spacing={4}>
+    <Grid container spacing={2}>
   {/* Main Left Content */}
   <Grid item xs={12} md={9}>
     {/* Cards - 4 in a row */}
-    <Grid container spacing={4}>
-    {cardData.map(({ title, value, icon, gradient }, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card sx={{ 
-              background: gradient, 
-              color: "#333", 
-              textAlign: "center", 
-              p: 3, 
-              borderRadius: "16px", 
-              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)", 
-              transition: "transform 0.3s", 
-              "&:hover": { transform: "scale(1.05)" } 
-            }}>
-              <CardContent>
-                {icon}
-                <Typography variant="h6" sx={{ mt: 1, fontWeight: "500" }}>{title}</Typography>
-                <Typography variant="h5" sx={{ fontWeight: "bold" }}>₹{value.toLocaleString()}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
+    <Grid container spacing={2}>
+  {cardData.map(({ title, value, icon, gradient }, index) => (
+    <Grid item sm={6} md={3} key={index}>
+      <Card
+        sx={{
+          background: gradient,
+          color: "#333",
+          height: 100,
+          textAlign: "center",
+          borderRadius: "12px",
+          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
+          transition: "transform 0.3s",
+          "&:hover": { transform: "scale(1.05)" },
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          p: 1,
+        }}
+      >
+        <CardContent sx={{ p: 0, "&:last-child": { pb: 0 } }}>
+          <Box sx={{ fontSize: 1 }}>{icon}</Box> {/* Smaller icon */}
+          <Typography variant="caption" sx={{ mt: 0.5 }}>
+            {title}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: "bold", fontSize: 12 }}
+          >
+            ₹{value.toLocaleString()}
+          </Typography>
+        </CardContent>
+      </Card>
     </Grid>
+  ))}
+</Grid>
 
-    {/* Pie Charts - 3 in a row */}
-    <Grid container spacing={4} sx={{ mt: 2 }}>
-    {pieCharts.map((chart, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card sx={{ background: "rgba(255, 255, 255, 0.75)", borderRadius: "16px" }}>
-                <CardContent>
-                  <Typography variant="h6">{chart.title}</Typography>
-                  {Array.isArray(chart.data) && chart.data.some((entry) => entry.value > 0) ? (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                              data={chart.data}
-                              dataKey="value"
-                              nameKey="name"
-                              cx="50%"
-                              cy="50%"
-                              outerRadius="70%"
-                              innerRadius="40%"
-                              paddingAngle={5}
-                              label={false}
-                          >
-                            {chart.data.map((entry, i) => (
-                                <Cell key={i} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value, name) => [`₹${value.toLocaleString()}`, name]} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                  ) : (
-                      <Typography variant="body2" color="textSecondary">No data available</Typography>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-        ))}
+    <Grid container spacing={2} sx={{ mt: 1 }}>
+  {pieCharts.map((chart, index) => (
+    <Grid item sm={6} md={3} key={index}>
+      <Card
+        sx={{
+          background: "rgba(255, 255, 255, 0.75)",
+          borderRadius: "12px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          p: 1,
+        }}
+      >
+        <CardContent
+          sx={{
+            p: 1,
+            "&:last-child": { pb: 1 },
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: 500, fontSize: "0.75rem", mb: 1 }}
+          >
+            {chart.title}
+          </Typography>
+
+          {Array.isArray(chart.data) &&
+          chart.data.some((entry) => entry.value > 0) ? (
+            <ResponsiveContainer width="100%" height={160}>
+              <PieChart>
+                <Pie
+                  data={chart.data}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius="60%"
+                  innerRadius="30%"
+                  paddingAngle={5}
+                  label={false}
+                >
+                  {chart.data.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={({ payload }) => {
+                    if (payload && payload.length) {
+                     const data = payload[0];
+                     return (
+                     <div style={{
+                        background: "#fff",
+                        border: "1px solid #ccc",
+                        padding: "8px",
+                        fontSize: "0.75rem",
+                        borderRadius: "6px",
+                        }}>
+                       <div><strong>{data.name}</strong>: ₹{data.value.toLocaleString()}</div>
+                     </div>
+                    );
+                   }
+                  return null;
+                  }}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: "0.6rem", paddingTop: 4 }}
+                  iconSize={8}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <Typography variant="body2" color="textSecondary">No data available</Typography>
+          )}
+        </CardContent>
+      </Card>
     </Grid>
+  ))}
+</Grid>
 
-    <Grid item xs={12} md={12} sx={{ mt: 4 }}>
+
+    <Grid item xs={12} md={12} sx={{ mt: 3 }}>
   <Card
     sx={{
-      p: 3,
-      borderRadius: "24px",
+      p: 2,
+      borderRadius: "16px",
       background: "linear-gradient(145deg, #fdfbff, #f3f1f9)",
       boxShadow: "0 8px 20px rgba(0, 0, 0, 0.08)",
       backdropFilter: "blur(10px)",
-      transition: "none", // Ensure no transitions are applied
+      transition: "none",
     }}
   >
     <Typography
-      variant="h6"
+      variant="subtitle1"
       sx={{
-        fontWeight: 700,
-        mb: 3,
+        mb: 2,
         color: "#4B4B7C",
-        fontSize: "1.1rem",
       }}
     >
       📈 Spending Trend - {dayjs(selectedMonth?.startDate).format("MMMM YYYY")}
     </Typography>
 
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={200}>
       <LineChart
         data={getSpendingTrendData().filter(
           (d) => d.income !== 0 || d.expense !== 0
@@ -435,12 +588,12 @@ useEffect(() => {
         <XAxis
           dataKey="date"
           stroke="#8884d8"
-          tick={{ fontSize: 12, fill: "#555" }}
+          tick={{ fontSize: 10, fill: "#555" }}
         />
         <YAxis
           stroke="#8884d8"
           domain={['auto', 'auto']}
-          tick={{ fontSize: 12, fill: "#555" }}
+          tick={{ fontSize: 10, fill: "#555" }}
           tickFormatter={(value) => `₹${value.toLocaleString()}`}
         />
         <Tooltip
@@ -456,7 +609,7 @@ useEffect(() => {
         <Legend
           verticalAlign="top"
           height={36}
-          wrapperStyle={{ color: "#4B4B7C", fontSize: "0.85rem" }}
+          wrapperStyle={{ color: "#4B4B7C", fontSize: "0.75rem" }}
         />
 
         {/* Expense Line */}
@@ -465,7 +618,7 @@ useEffect(() => {
           dataKey="expense"
           name="Expense"
           stroke="#FF6B6B"
-          strokeWidth={2.5}
+          strokeWidth={2}
           dot={(props) =>
             props.payload.expense === 0 ? null : (
               <circle
@@ -487,7 +640,7 @@ useEffect(() => {
           dataKey="income"
           name="Income"
           stroke="#4CAF50"
-          strokeWidth={2.5}
+          strokeWidth={2}
           dot={(props) =>
             props.payload.income === 0 ? null : (
               <circle
@@ -516,17 +669,17 @@ useEffect(() => {
   <Card
   sx={{
     background: "linear-gradient(135deg, #c1f1fc, #e0c3fc)",
-    borderRadius: "16px",
-    p: 3,
-    mb: 4,
+    borderRadius: "12px",
+    mb: 2,
     boxShadow: "0 8px 20px rgba(0, 0, 0, 0.1)",
+    textAlign: 'center',
   }}
 >
   <CardContent>
-    <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+    <Typography variant="body2" sx={{ fontWeight: "bold"}}>
       Scheduled Transactions
     </Typography>
-    <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
+    <Typography variant="caption" sx={{ mb: 2, color: "text.secondary" }}>
       {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
     </Typography>
     {recurringTransactions.length > 0 ? (
@@ -540,9 +693,9 @@ useEffect(() => {
               justifyContent: "space-between",
               alignItems: "center",
               background: "#fff",
-              borderRadius: "12px",
-              p: 1.5,
-              mb: 1.5,
+              borderRadius: "8px",
+              p: 1,
+              mb: 1,
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
             }}
           >
@@ -553,10 +706,10 @@ useEffect(() => {
                 <SouthWestIcon sx={{ color: "green", fontSize: 18 }} />
               )}
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                <Typography variant="caption" sx={{fontSize: "0.6rem", fontWeight: 500, mr: 2 }}>
                   {txn.category}: ₹{txn.amount}
                 </Typography>
-                <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.5 }}>
+                <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.5,fontSize: "0.5rem" }}>
                   {new Date(txn.nextRun).toLocaleDateString(undefined, {
                     day: "numeric",
                     month: "short",
@@ -570,14 +723,14 @@ useEffect(() => {
   onClick={() => handleSkipRecurring(txn.id)}
   title="Skip this run"
 >
-  <SkipNextIcon style={{ color: "#ffa726" }} /> {/* amber/orange-ish */}
+<SkipNextIcon style={{ color: "#ffa726", fontSize: "15px" }} />
 </IconButton>
           </Box>
         );
       })
     ) : (
       <Typography variant="body2" color="text.secondary">
-        No scheduled transactions
+        No transactions
       </Typography>
     )}
   </CardContent>
@@ -587,17 +740,18 @@ useEffect(() => {
   {/* Recent Transactions */}
   <Card
   sx={{
-    background: "linear-gradient(135deg, #fbc2eb, #a6c1ee)",
-    borderRadius: "16px",
-    p: 3,
+    background: "linear-gradient(135deg, #c1f1fc, #e0c3fc)",
+    borderRadius: "12px",
+    mb: 2,
     boxShadow: "0 8px 20px rgba(0, 0, 0, 0.1)",
+    textAlign: 'center',
   }}
 >
   <CardContent>
-    <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+    <Typography variant="body2" sx={{ fontWeight: "bold"}}>
       Recent Transactions
     </Typography>
-    <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
+    <Typography variant="caption" sx={{ mb: 2, color: "text.secondary" }}>
       Last 1 Week
     </Typography>
     {recentTransactions.length > 0 ? (
@@ -611,9 +765,9 @@ useEffect(() => {
               justifyContent: "space-between",
               alignItems: "center",
               background: "#fff",
-              borderRadius: "12px",
-              p: 1.5,
-              mb: 1.5,
+              borderRadius: "8px",
+              p: 1,
+              mb: 1,
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
             }}
           >
@@ -623,10 +777,10 @@ useEffect(() => {
               ) : (
                 <SouthWestIcon sx={{ color: "green", fontSize: 18 }} />
               )}
-               <Typography variant="body2" sx={{ fontWeight: 500 }}>
+               <Typography variant="caption" sx={{fontSize: "0.6rem", fontWeight: 500, mr: 2  }}>
     {txn.category}: ₹{txn.amount}
   </Typography>
-  <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.5 }}>
+  <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.5,fontSize: "0.5rem", }}>
     {new Date(txn.transactionDate).toLocaleDateString(undefined, {
       day: "numeric",
       month: "short",

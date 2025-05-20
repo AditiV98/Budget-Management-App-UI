@@ -30,19 +30,28 @@ const UserMenu = () => {
 
     return (
         <>
-            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ ml: "auto", mr: 2 }}>
-                <Avatar>{userEmail?.[0]?.toUpperCase() || "U"}</Avatar>
-            </IconButton>
-
-            <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)} onClick={() => setAnchorEl(null)}>
+            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ ml: "auto", mr: 2, p: 0.5 }}>
+  <Avatar sx={{ width: 28, height: 28, fontSize: '0.8rem' }}>
+    {userEmail?.[0]?.toUpperCase() || "U"}
+  </Avatar>
+</IconButton>
+            <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)} onClick={() => setAnchorEl(null)}
+            PaperProps={{
+                sx: {
+                  width: 160,                // smaller width
+                  padding: 1,                // reduce padding
+                  borderRadius: 2,
+                  fontSize: '0.75rem',       // smaller text size
+                },
+              }}>
                 <MenuItem disabled>
                     <div>
-                        <Typography fontWeight="bold">{userEmail}</Typography>
+                    <Typography fontWeight="bold" sx={{ fontSize: '0.6rem' }}>{userEmail}</Typography>
                     </div>
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={handleLogout}>
-                    <Typography>Logout</Typography>
+                <Typography sx={{ fontSize: '0.6rem' }}>Logout</Typography>
                 </MenuItem>
             </Menu>
         </>

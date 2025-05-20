@@ -75,18 +75,18 @@ const MyAccount = () => {
     };
 
   return (
-      <Box sx={{ display: "flex" }}>
-          <Sidebar />
-          <Box
-              component="main"
-              sx={{
-                  flexGrow: 1,
-                  px: 3,
-                  pt: 10,
-                  background: pageBackground,
-                  minHeight: "100vh",
-              }}
-          >
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <Sidebar />
+      <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            overflow: "auto",
+            background: pageBackground,
+            px: 1,
+            pt: 8, // adjust based on AppBar height
+          }}
+      >
         <Dialog
             open={openErrorDialog}
             onClose={() => setOpenErrorDialog(false)}
@@ -130,7 +130,7 @@ const MyAccount = () => {
             </DialogContent>
         </Dialog>
 
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexWrap: 'wrap' }}>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -138,13 +138,20 @@ const MyAccount = () => {
           sx={{
             background: "linear-gradient(90deg, #5c6bc0, #7986cb)",
             color: "white",
-            borderRadius: "10px",
-            padding: "8px 20px",
+            borderRadius: "6px",               // Match select's border radius
+            height: "30px",                    // Match select's height
+            minWidth: "110px",                 // Optional: similar to Select width
+            padding: "2px 8px",                // Smaller padding
             textTransform: "none",
-            fontSize: "16px",
+            fontSize: "0.75rem",               // Match Select text
             fontWeight: "bold",
-            transition: "0.3s",
-            "&:hover": { background: "linear-gradient(90deg, #3f51b5, #5c6bc0)", transform: "scale(1.05)" }
+            mr: 2,
+            boxShadow: "0px 5px 15px rgba(92, 107, 192, 0.3)",
+            transition: "0.3s ease-in-out",
+            "&:hover": {
+              background: "linear-gradient(90deg, #3f51b5, #5c6bc0)",
+              transform: "scale(1.05)"
+            }
           }}
         >
           Add Account
@@ -287,7 +294,6 @@ const MyAccount = () => {
                       background: accountColors[acc.type] || "#F3E5F5",
                       color: "#333",
                       textAlign: "center",
-                      p: 3,
                       borderRadius: "16px",
                       boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
                       transition: "transform 0.3s",
@@ -298,19 +304,19 @@ const MyAccount = () => {
                   {/* Edit & Delete Buttons in Top Right */}
                   <Box sx={{ position: "absolute", top: 8, right: 8 }}>
                       <IconButton onClick={() => handleEdit(acc)} color="primary">
-                          <EditIcon />
+                          <EditIcon fontSize="small"/>
                       </IconButton>
                       <IconButton onClick={() => dispatch(deleteAccount(acc.id))} color="error">
-                          <DeleteIcon />
+                          <DeleteIcon fontSize="small"/>
                       </IconButton>
                   </Box>
 
                   <CardContent>
                       {/* Account Name & Type */}
-                      <Typography variant="h6" sx={{ fontWeight: "600" }}>
+                      <Typography variant="h6" sx={{ fontWeight: "600", fontSize: "0.95rem"}}>
                           {acc.name}
                       </Typography>
-                      <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                      <Typography variant="body2" color="textSecondary" sx={{ mb: 1 ,fontSize: "0.70rem"}}>
                           {acc.type}
                       </Typography>
 
@@ -321,6 +327,7 @@ const MyAccount = () => {
                               fontWeight: "bold",
                               color: acc.balance < 500 ? "#D32F2F" : "#388E3C",
                               mt: 1,
+                              fontSize: "0.95rem"
                           }}
                       >
                           ₹{acc.balance.toLocaleString()}
@@ -332,13 +339,13 @@ const MyAccount = () => {
                           { title: "Savings", categories: acc.savingCategories, color: "#C8E6C9", textColor: "#1B5E20" },
                       ].map((section, index) => (
                           <Box key={index} sx={{ mt: 2 }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 ,fontSize: "0.80rem"}}>
                                   {section.title}
                               </Typography>
                               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center" }}>
                                   {section.categories.length > 0 ? (
                                       section.categories.map((cat, idx) => (
-                                          <Chip key={idx} label={cat} sx={{ background: section.color, color: section.textColor }} />
+                                          <Chip key={idx} label={cat} sx={{ background: section.color, color: section.textColor,fontSize: "0.60rem" }} />
                                       ))
                                   ) : (
                                       <Typography variant="body2" color="textSecondary">

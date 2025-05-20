@@ -8,7 +8,7 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Box from '@mui/material/Box';
-import {MenuItem, Select, Tooltip} from '@mui/material';
+import {MenuItem, Select, Tooltip,IconButton} from '@mui/material';
 import {useDispatch, useSelector} from "react-redux";
 import {useEffect,useState} from "react";
 import {fetchTransactions} from "../features/transactions/transactionsSlice";
@@ -19,6 +19,8 @@ import dayjs from "dayjs";
 import CustomDateFilter from "./CustomDateFilter";
 import FilterDropdown from "./FilterDropdown";
 import Sidebar from "./PermanentDrawerLeft";
+import {fetchSavings} from "../features/saving/savingSlice"
+import EditIcon from "@mui/icons-material/Edit";
 
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
@@ -44,14 +46,15 @@ const formatDate = (dateString) => {
 };
 
 const columns = [
-  { id: 'account', label: 'ACCOUNT', minWidth: 170 },
+ { id: 'account', label: 'ACCOUNT', minWidth: 170 },
   { id: 'amount', label: 'AMOUNT', minWidth: 100 },
-  {id: 'type',label: 'TYPE',minWidth: 170},
-  {id: 'category',label: 'CATEGORY',minWidth: 170},
+  {id: 'type',label: 'CATEGORY',minWidth: 170},
+  {id:'status',label:'STATUS',minWidth:170},
   {id: 'currentValue',label: 'CURRENT VALUE',minWidth: 170},
-  { id: "transactionDate", label: "TRANSACTION DATE", minWidth: 170 },
+  { id: "startDate", label: "START DATE", minWidth: 170 },
   {id: 'maturityDate',label: 'MATURITY DATE',minWidth: 170},
   {id: 'createdAt',label: 'CREATED AT',minWidth: 170},
+  { id: "actions", label: "ACTIONS", minWidth: 100 },
 ];
 
 const categoryOptions = [
@@ -64,13 +67,18 @@ const categoryOptions = [
 
 export default function Savings() {
   const dispatch = useDispatch();
-  const transactions = useSelector((state) => state.transaction?.transactions) || [];
+ // const transactions = useSelector((state) => state.transaction?.transactions) || [];
+ const savings = useSelector((state) => state.savings?.savings) || [];
   const accounts = useSelector((state) => state.account?.accounts) || [];
   const { selectedMonth, updateMonth } = useFilterContext(); // Call the hook directly
   const [showCustomFilter, setShowCustomFilter] = useState(false);
 
+  const [selectedMonthNum, setSelectedMonthNum] = useState(dayjs().month()); // month index (0-11)
+  const [selectedYear, setSelectedYear] = useState(dayjs().year()); // e.g., 2024
+  const [isCustomMode, setIsCustomMode] = useState(false);
+
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(15);
+  const [rowsPerPage, setRowsPerPage] = React.useState(12);
   const [categoryFilter, setCategoryFilter] = useState([]);
 
   useEffect(() => {
@@ -85,10 +93,17 @@ export default function Savings() {
         categoryFilter.forEach((category) => params.append("category", category));
       }
 
-      dispatch(fetchTransactions(params));
+      dispatch(fetchSavings(params));
     }
   }, [dispatch, selectedMonth, categoryFilter]);
 
+  useEffect(() => {
+    if (!isCustomMode && selectedYear && selectedMonthNum >= 0) {
+      const startDate = dayjs().year(selectedYear).month(selectedMonthNum).startOf('month').format('YYYY-MM-DD');
+      const endDate = dayjs().year(selectedYear).month(selectedMonthNum).endOf('month').format('YYYY-MM-DD');
+      updateMonth({ startDate, endDate });
+    }
+  }, [selectedMonthNum, selectedYear, isCustomMode]); // Note: depend on isCustomMode
 
   const handleMonthChange = (event) => {
     const value = event.target.value;
@@ -121,53 +136,169 @@ export default function Savings() {
     setPage(0);
   };
 
-  return (
-      <Box sx={{ display: "flex" }}>
-        <Sidebar />
-        <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              px: 3,
-              pt: 5,
-              background: pageBackground,
-              minHeight: "100vh",
-            }}
-        >
+  const handleOpen = (transaction = null) => {
+   
+  };
 
-<Box sx={{ height: "calc(100vh - 64px)", display: "flex", flexDirection: "column", p: 5}}>
-  <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3, position: "relative"  }}>
-    <Select
-        value={selectedMonth?.startDate || ""}
-        onChange={handleMonthChange}
-        sx={{
-          width: 220,
-          background: "linear-gradient(135deg, #fff, #fce4ec)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-          "& .MuiSelect-select": { padding: "10px", fontWeight: "bold", color: "#333" }
-        }}
-    >
-      {months.map((month) => (
-          <MenuItem key={month.value} value={month.value}>{month.label}</MenuItem>
-      ))}
-      <MenuItem value="custom">Custom Date</MenuItem>
-    </Select>
-    {showCustomFilter && (
-        <Box sx={{ position: "absolute", top: "110%", right: 0, zIndex: 10 }}>
-          <CustomDateFilter
-              onApply={(dates) => {
-                updateMonth(dates);
-                setShowCustomFilter(false);
-              }}
-              onCancel={() => setShowCustomFilter(false)}
-          />
-        </Box>
-    )}
+  return (
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <Sidebar />
+    <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            overflow: "auto",
+            background: pageBackground,
+            px: 1,
+            pt: 8, 
+          }}
+      >
+
+<Box sx={{ height: "calc(100vh - 80px)", display: "flex", flexDirection: "column"}}>
+<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexWrap: 'wrap', position: 'relative' }}>
+     {/* Month Dropdown */}
+<Select
+  value={selectedMonthNum}
+  onChange={(e) => setSelectedMonthNum(parseInt(e.target.value))}
+  sx={{
+    width: 110,
+    height: 30,
+    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    borderRadius: "6px",
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    mr: 1,
+    p:1,
+    '& .MuiSelect-select': {
+      padding: '1px 1px',
+      fontSize: '0.75rem',
+      fontWeight: '500',
+      color: '#333',
+    },
+  }}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        maxHeight: 150, // limit height of dropdown
+        width: 120,     // narrow the dropdown width
+        fontSize: '0.75rem',
+        '& .MuiMenuItem-root': {
+          minHeight: '30px',
+          fontSize: '0.75rem',
+          px: 1,
+        },
+      },
+    },
+  }}
+>
+  {Array.from({ length: 12 }, (_, i) => (
+    <MenuItem key={i} value={i}>
+      {dayjs().month(i).format("MMMM")}
+    </MenuItem>
+  ))}
+</Select>
+
+{/* Year Dropdown */}
+<Select
+  value={selectedYear}
+  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+  sx={{
+    width: 110,
+    height: 30,
+    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    borderRadius: "6px",
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    mr: 1,
+    p:1,
+    '& .MuiSelect-select': {
+      padding: '1px 1px',
+      fontSize: '0.75rem',
+      fontWeight: '500',
+      color: '#333',
+    },
+  }}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        maxHeight: 150, // limit height of dropdown
+        width: 120,     // narrow the dropdown width
+        fontSize: '0.75rem',
+        '& .MuiMenuItem-root': {
+          minHeight: '30px',
+          fontSize: '0.75rem',
+          px: 1,
+        },
+      },
+    },
+  }}
+>
+  {Array.from({ length: 5 }, (_, i) => {
+    const year = dayjs().year() - i;
+    return <MenuItem key={year} value={year}>{year}</MenuItem>;
+  })}
+</Select>
+
+{/* Custom Date Option */}
+<Select
+ value={isCustomMode ? "custom" : ""}
+ onChange={(e) => {
+   const isCustom = e.target.value === "custom";
+   setIsCustomMode(isCustom);
+   setShowCustomFilter(isCustom);
+ }}
+  displayEmpty
+  sx={{
+              width: 110,
+              height: 30,
+              background: "linear-gradient(135deg, #fff, #fce4ec)",
+              borderRadius: "6px",
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+              mr: 1,
+              p:1,
+              '& .MuiSelect-select': {
+                padding: '1px 1px',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                color: '#333',
+              },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  maxHeight: 150, // limit height of dropdown
+                  width: 120,     // narrow the dropdown width
+                  fontSize: '0.75rem',
+                  '& .MuiMenuItem-root': {
+                    minHeight: '30px',
+                    fontSize: '0.75rem',
+                    px: 1,
+                  },
+                },
+              },
+            }}
+>
+  <MenuItem value="">Default</MenuItem>
+  <MenuItem value="custom">Custom Date</MenuItem>
+</Select>
+{/* Render Custom Date Picker */}
+{showCustomFilter && (
+  <Box sx={{ position: "absolute", top: "110%", right: 0, zIndex: 10 }}>
+    <CustomDateFilter
+      onApply={(dates) => {
+        updateMonth(dates);
+        setShowCustomFilter(false);
+        setIsCustomMode(true); // Stay in custom mode
+      }}
+      onCancel={() => {
+        setShowCustomFilter(false);
+        setIsCustomMode(false);
+      }}
+    />
   </Box>
-      <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", borderRadius: "10px", overflow: "hidden" }}>
-        <TableContainer sx={{ flexGrow: 1, overflow: "auto" }}>
-          <Table stickyHeader>
+)}
+  </Box>
+  <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", borderRadius: "10px", overflow: "hidden",fontSize: "0.75rem",p:1 }}>
+        <TableContainer sx={{ flexGrow: 1, overflow: "auto" ,borderRadius: "10px",}}>
+        <Table stickyHeader size="small"> 
             <TableHead>
               <TableRow sx={{ backgroundColor: "#1E88E5" }}>
                 {columns.map((column) => (
@@ -175,12 +306,7 @@ export default function Savings() {
                     key={column.id}
                     align={column.align}
                     style={{ minWidth: column.minWidth }}
-                    sx={{ 
-                      backgroundColor: "#3949ab", 
-                      color: "white", 
-                      fontWeight: "bold",
-                      textAlign: "left"
-                    }}
+                    sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
                   >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       {column.label}
@@ -199,15 +325,21 @@ export default function Savings() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {Array.isArray(transactions) && transactions?.length > 0 ? (
-              transactions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+              {Array.isArray(savings) && savings?.length > 0 ? (
+              savings.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index} hover sx={{backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white",
                       "&:hover": { backgroundColor: "#e3f2fd" }}}>
                     {columns.map((column) => (
-                        <TableCell key={column.id}>
-                          {column.id === "account" ? (
+                        <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1 }}>
+                          {column.id === "actions" ? (
+                        <>
+                          <Tooltip title="Edit">
+                            <IconButton onClick={() => handleOpen(row)} sx={{ p: 0.5 }}><EditIcon fontSize="small" color="primary" /></IconButton>
+                          </Tooltip>
+                        </>
+                      ) : column.id === "account" ? (
                               row.account.name // Extract account name instead of showing the entire object
-                          ) : column.id === "transactionDate" || column.id === "createdAt" ? (
+                          ) : column.id === "startDate" || column.id === "createdAt" ? (
                               formatDate(row[column.id]) // ✅ Correctly format the date values
                           ) : (
                               row[column.id]
@@ -217,7 +349,7 @@ export default function Savings() {
                   </TableRow>
               ))):(
                   <TableRow>
-                    <TableCell colSpan={columns.length} align="center">
+                    <TableCell colSpan={columns.length} align="center" sx={{ fontSize: "0.65rem" }}>
                       No transactions available.
                     </TableCell>
                   </TableRow>
@@ -227,13 +359,25 @@ export default function Savings() {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[15]}
-          component="div"
-          count={transactions.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+         rowsPerPageOptions={[12]}
+         component="div"
+         count={savings.length}
+         rowsPerPage={rowsPerPage}
+         page={page}
+         onPageChange={handleChangePage}
+         onRowsPerPageChange={handleChangeRowsPerPage}
+         sx={{
+           '& .MuiTablePagination-toolbar': {
+             minHeight: '32px',
+             fontSize: '0.65rem',
+           },
+           '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+             fontSize: '0.65rem',
+           },
+           '& .MuiInputBase-root': {
+             fontSize: '0.65rem',
+           },
+         }}
         />
       </Paper>
     </Box>
