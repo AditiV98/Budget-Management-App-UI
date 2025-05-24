@@ -48,7 +48,7 @@ const savingsSlice=createSlice({
             })
             .addCase(fetchSavings.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                state.savings = action.payload.data;
+                state.savings = Array.isArray(action.payload.data) ? action.payload.data : [];
                 state.error = null;
             })
             .addCase(fetchSavings.rejected, (state, action) => {

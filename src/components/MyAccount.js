@@ -231,42 +231,89 @@ const MyAccount = () => {
       <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
         Expense Categories
       </Typography>
-      <FormControl fullWidth>
-        <InputLabel>Expense Categories</InputLabel>
-        <Select
-          multiple
-          value={newAccount.expenseCategories}
-          onChange={(e) => setNewAccount({ ...newAccount, expenseCategories: e.target.value })}
-          renderValue={(selected) => selected.join(", ")}
-        >
-          {expenseCategories.map((cat) => (
-            <MenuItem key={cat} value={cat}>
-              {cat}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <Box display="flex" flexDirection="column" gap={2}>
+  <FormControl fullWidth>
+  
+    <Select
+      multiple
+      value={newAccount.expenseCategories}
+      onChange={(e) =>
+        setNewAccount({ ...newAccount, expenseCategories: e.target.value })
+      }
+      renderValue={(selected) => selected.join(", ")}
+    >
+      {expenseCategories.map((cat) => (
+        <MenuItem key={cat} value={cat}>
+          {cat}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
 
+  <TextField
+    label="Add Custom Expense Category"
+    fullWidth
+    variant="outlined"
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && e.target.value.trim() !== "") {
+        const customCat = e.target.value.trim();
+        if (!newAccount.expenseCategories.includes(customCat)) {
+          setNewAccount((prev) => ({
+            ...prev,
+            expenseCategories: [...prev.expenseCategories, customCat],
+          }));
+        }
+        e.target.value = "";
+        e.preventDefault();
+      }
+    }}
+    placeholder="Press Enter to add"
+  />
+</Box>
       <Divider sx={{ my: 3 }} />
 
       <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
         Saving Categories
       </Typography>
-      <FormControl fullWidth>
-        <InputLabel>Saving Categories</InputLabel>
-        <Select
-          multiple
-          value={newAccount.savingCategories}
-          onChange={(e) => setNewAccount({ ...newAccount, savingCategories: e.target.value })}
-          renderValue={(selected) => selected.join(", ")}
-        >
-          {savingsCategories.map((cat) => (
-            <MenuItem key={cat} value={cat}>
-              {cat}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <Box display="flex" flexDirection="column" gap={2}>
+      <FormControl fullWidth sx={{ mb: 1 }}>
+  <Select
+    multiple
+    value={newAccount.savingCategories}
+    onChange={(e) =>
+      setNewAccount({ ...newAccount, savingCategories: e.target.value })
+    }
+    renderValue={(selected) => selected.join(", ")}
+  >
+    {savingsCategories.map((cat) => (
+      <MenuItem key={cat} value={cat}>
+        {cat}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+
+<TextField
+  label="Add Custom Saving Category"
+  fullWidth
+  variant="outlined"
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && e.target.value.trim() !== "") {
+      const customCat = e.target.value.trim();
+      if (!newAccount.savingCategories.includes(customCat)) {
+        setNewAccount((prev) => ({
+          ...prev,
+          savingCategories: [...prev.savingCategories, customCat],
+        }));
+      }
+      e.target.value = "";
+      e.preventDefault();
+    }
+  }}
+  placeholder="Press Enter to add"
+/>
+
+      </Box>
 
       <Button
         fullWidth
@@ -281,90 +328,131 @@ const MyAccount = () => {
   </DialogContent>
 </Dialog>
 
-
       {status === "loading" ? (
         <p>Loading accounts...</p>
       )  : (
-      <Grid container spacing={3}>
-          {Array.isArray(accounts) && accounts?.length > 0 ? (
-      accounts.map((acc) => (
-          <Grid item xs={12} sm={6} md={4}>
-              <Card
+        <Box sx={{ mt: 2, px: 2 }}>
+        <Grid container spacing={3}>
+          {Array.isArray(accounts) && accounts.length > 0 ? (
+            accounts.map((acc) => (
+              <Grid item xs={12} sm={6} md={4} key={acc.id}>
+                <Card
                   sx={{
-                      background: accountColors[acc.type] || "#F3E5F5",
-                      color: "#333",
-                      textAlign: "center",
-                      borderRadius: "16px",
-                      boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
-                      transition: "transform 0.3s",
-                      "&:hover": { transform: "scale(1.05)" },
-                      position: "relative",
+                    background: accountColors[acc.type] || "#F3E5F5",
+                    color: "#333",
+                    textAlign: "center",
+                    borderRadius: "16px",
+                    boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
+                    transition: "transform 0.3s",
+                    "&:hover": { transform: "scale(1.05)" },
+                    position: "relative",
+                    height: 300, // 🔹 Fixed height for all cards
+                    display: "flex",
+                    flexDirection: "column",
                   }}
-              >
-                  {/* Edit & Delete Buttons in Top Right */}
+                >
+                  {/* Edit & Delete Buttons */}
                   <Box sx={{ position: "absolute", top: 8, right: 8 }}>
-                      <IconButton onClick={() => handleEdit(acc)} color="primary">
-                          <EditIcon fontSize="small"/>
-                      </IconButton>
-                      <IconButton onClick={() => dispatch(deleteAccount(acc.id))} color="error">
-                          <DeleteIcon fontSize="small"/>
-                      </IconButton>
+                    <IconButton onClick={() => handleEdit(acc)} color="primary">
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton onClick={() => dispatch(deleteAccount(acc.id))} color="error">
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </Box>
-
-                  <CardContent>
-                      {/* Account Name & Type */}
-                      <Typography variant="h6" sx={{ fontWeight: "600", fontSize: "0.95rem"}}>
-                          {acc.name}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary" sx={{ mb: 1 ,fontSize: "0.70rem"}}>
-                          {acc.type}
-                      </Typography>
-
-                      {/* Account Balance */}
-                      <Typography
-                          variant="h5"
+      
+                  {/* Scrollable Content */}
+                  <CardContent
+                    sx={{
+                      overflowY: "auto",
+                      mt: 3,
+                      px: 2,
+                      flexGrow: 1,
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: "0.95rem" }}>
+                      {acc.name}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" sx={{ mb: 1, fontSize: "0.70rem" }}>
+                      {acc.type}
+                    </Typography>
+      
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: "bold",
+                        color: acc.balance < 500 ? "#D32F2F" : "#388E3C",
+                        mt: 1,
+                        fontSize: "0.95rem",
+                      }}
+                    >
+                      ₹{acc.balance.toLocaleString()}
+                    </Typography>
+      
+                    {/* Expenses and Savings */}
+                    {[
+                      {
+                        title: "Expenses",
+                        categories: acc.expenseCategories,
+                        color: "#BBDEFB",
+                        textColor: "#1A237E",
+                      },
+                      {
+                        title: "Savings",
+                        categories: acc.savingCategories,
+                        color: "#C8E6C9",
+                        textColor: "#1B5E20",
+                      },
+                    ].map((section, index) => (
+                      <Box key={index} sx={{ mt: 2 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: "bold", mb: 1, fontSize: "0.80rem" }}
+                        >
+                          {section.title}
+                        </Typography>
+                        <Box
                           sx={{
-                              fontWeight: "bold",
-                              color: acc.balance < 500 ? "#D32F2F" : "#388E3C",
-                              mt: 1,
-                              fontSize: "0.95rem"
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 1,
+                            justifyContent: "center",
                           }}
-                      >
-                          ₹{acc.balance.toLocaleString()}
-                      </Typography>
-
-                      {/* Categories Section */}
-                      {[
-                          { title: "Expenses", categories: acc.expenseCategories, color: "#BBDEFB", textColor: "#1A237E" },
-                          { title: "Savings", categories: acc.savingCategories, color: "#C8E6C9", textColor: "#1B5E20" },
-                      ].map((section, index) => (
-                          <Box key={index} sx={{ mt: 2 }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 ,fontSize: "0.80rem"}}>
-                                  {section.title}
-                              </Typography>
-                              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center" }}>
-                                  {section.categories.length > 0 ? (
-                                      section.categories.map((cat, idx) => (
-                                          <Chip key={idx} label={cat} sx={{ background: section.color, color: section.textColor,fontSize: "0.60rem" }} />
-                                      ))
-                                  ) : (
-                                      <Typography variant="body2" color="textSecondary">
-                                          No categories assigned
-                                      </Typography>
-                                  )}
-                              </Box>
-                          </Box>
-                      ))}
+                        >
+                          {section.categories.length > 0 ? (
+                            section.categories.map((cat, idx) => (
+                              <Chip
+                                key={idx}
+                                label={cat}
+                                sx={{
+                                  background: section.color,
+                                  color: section.textColor,
+                                  fontSize: "0.60rem",
+                                }}
+                              />
+                            ))
+                          ) : (
+                            <Typography variant="body2" color="textSecondary">
+                              No categories assigned
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    ))}
                   </CardContent>
-              </Card>
-          </Grid>
-))
+                </Card>
+              </Grid>
+            ))
           ) : (
-              <Typography variant="body2" color="textSecondary" sx={{ width: "100%", textAlign: "center" }}>
-                  No accounts found.
-              </Typography>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{ width: "100%", textAlign: "center" }}
+            >
+              No accounts found.
+            </Typography>
           )}
-
+       
           {/* Edit Account Dialog */}
           <Dialog
   open={openEditDialog}
@@ -441,46 +529,88 @@ const MyAccount = () => {
         <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
           Expense Categories
         </Typography>
-        <FormControl fullWidth>
-          <InputLabel>Expense Categories</InputLabel>
-          <Select
-            multiple
-            value={editedAccount.expenseCategories}
-            onChange={(e) =>
-              setEditedAccount({ ...editedAccount, expenseCategories: e.target.value })
-            }
-            renderValue={(selected) => selected.join(", ")}
-          >
-            {expenseCategories.map((cat) => (
-              <MenuItem key={cat} value={cat}>
-                {cat}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box display="flex" flexDirection="column" gap={2}>
+  <FormControl fullWidth>
+    <Select
+      multiple
+      value={editedAccount.expenseCategories}
+      onChange={(e) =>
+        setEditedAccount({ ...editedAccount, expenseCategories: e.target.value })
+      }
+      renderValue={(selected) => selected.join(", ")}
+    >
+      {(editedAccount.expenseCategories || []).map((cat) => (
+        <MenuItem key={cat} value={cat}>
+          {cat}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  <TextField
+    label="Add Custom Expense Category"
+    fullWidth
+    variant="outlined"
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && e.target.value.trim() !== "") {
+        const customCat = e.target.value.trim();
+        if (!editedAccount.expenseCategories.includes(customCat)) {
+          setEditedAccount((prev) => ({
+            ...prev,
+            expenseCategories: [...prev.expenseCategories, customCat],
+          }));
+        }
+        e.target.value = "";
+        e.preventDefault();
+      }
+    }}
+    placeholder="Press Enter to add"
+  />
+</Box>
 
         <Divider sx={{ my: 3 }} />
 
         <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
           Saving Categories
         </Typography>
-        <FormControl fullWidth>
-          <InputLabel>Saving Categories</InputLabel>
-          <Select
-            multiple
-            value={editedAccount.savingCategories}
-            onChange={(e) =>
-              setEditedAccount({ ...editedAccount, savingCategories: e.target.value })
-            }
-            renderValue={(selected) => selected.join(", ")}
-          >
-            {savingsCategories.map((cat) => (
-              <MenuItem key={cat} value={cat}>
-                {cat}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box display="flex" flexDirection="column" gap={2}>
+  <FormControl fullWidth>
+    <Select
+      multiple
+      value={editedAccount.savingCategories}
+      onChange={(e) =>
+        setEditedAccount({ ...editedAccount, savingCategories: e.target.value })
+      }
+      renderValue={(selected) => selected.join(", ")}
+    >
+      {(editedAccount.savingCategories || []).map((cat) => (
+        <MenuItem key={cat} value={cat}>
+          {cat}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  <TextField
+    label="Add Custom Saving Category"
+    fullWidth
+    variant="outlined"
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && e.target.value.trim() !== "") {
+        const customCat = e.target.value.trim();
+        if (!editedAccount.savingCategories.includes(customCat)) {
+          setEditedAccount((prev) => ({
+            ...prev,
+            savingCategories: [...prev.savingCategories, customCat],
+          }));
+        }
+        e.target.value = "";
+        e.preventDefault();
+      }
+    }}
+    placeholder="Press Enter to add"
+  />
+</Box>
       </Box>
     )}
   </DialogContent>
@@ -505,8 +635,8 @@ const MyAccount = () => {
   </DialogActions>
 </Dialog>
 
-
-      </Grid>
+        </Grid>
+        </Box>
         )}
     </Box>
       </Box>

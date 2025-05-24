@@ -3,14 +3,18 @@ import {
     Popover,
     Button,
     Checkbox,
-    FormControlLabel,
     List,
     ListItem,
     ListItemText,
     TextField,
     Typography,
+    Divider,
+    IconButton,
+    Box
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import ClearAllIcon from "@mui/icons-material/ClearAll";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
 
 const FilterDropdown = ({ label, options, selected, onChange }) => {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -47,7 +51,7 @@ const FilterDropdown = ({ label, options, selected, onChange }) => {
     return (
         <div>
             <Button
-                variant="outlined"
+                size="small"
                 startIcon={<FilterListIcon />}
                 onClick={handleOpen}
             >
@@ -59,9 +63,16 @@ const FilterDropdown = ({ label, options, selected, onChange }) => {
                 anchorEl={anchorEl}
                 onClose={handleClose}
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                PaperProps={{
+                    style: {
+                        width: 200,
+                        padding: "12px",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    },
+                }}
             >
-                <div style={{ padding: "16px", width: "250px" }}>
-                    {/* Search Input */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
                     <TextField
                         fullWidth
                         variant="outlined"
@@ -70,49 +81,73 @@ const FilterDropdown = ({ label, options, selected, onChange }) => {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
+                </Box>
 
-                    {/* Select All / Clear */}
-                    <Typography
-                        variant="body2"
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        gap: 1,
+                        mb: 1,
+                    }}
+                >
+                    <IconButton size="small" onClick={handleSelectAll} title="Select All">
+                        <DoneAllIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" onClick={handleClear} title="Clear All">
+                        <ClearAllIcon fontSize="small" />
+                    </IconButton>
+                </Box>
+
+                <Divider sx={{ mb: 1 }} />
+
+                <List dense disablePadding sx={{ maxHeight: 180, overflowY: "auto" }}>
+                    {options
+                        .filter((opt) =>
+                            opt.label.toLowerCase().includes(search.toLowerCase())
+                        )
+                        .map((opt) => (
+                            <ListItem
+                                key={opt.value}
+                                disablePadding
+                                dense
+                                button
+                                onClick={() => handleToggle(opt.value)}
+                            >
+                                <Checkbox
+                                    size="small"
+                                    checked={tempSelected.includes(opt.value)}
+                                    sx={{ paddingLeft: 1 }}
+                                />
+                                <ListItemText
+                                    primary={opt.label}
+                                    sx={{ marginLeft: 1 }}
+                                />
+                            </ListItem>
+                        ))}
+                </List>
+
+                <Divider sx={{ mt: 1, mb: 1 }} />
+
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mt: 1,
+                    }}
+                >
+                    <Button size="small" onClick={handleClose} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button
+                        size="small"
+                        onClick={handleApply}
+                        variant="contained"
                         color="primary"
-                        style={{ cursor: "pointer", marginTop: "8px" }}
-                        onClick={handleSelectAll}
                     >
-                        Select all
-                    </Typography>
-                    <Typography
-                        variant="body2"
-                        color="primary"
-                        style={{ cursor: "pointer" }}
-                        onClick={handleClear}
-                    >
-                        Clear
-                    </Typography>
-
-                    {/* Options List */}
-                    <List>
-                        {options
-                            .filter((opt) =>
-                                opt.label.toLowerCase().includes(search.toLowerCase())
-                            )
-                            .map((opt) => (
-                                <ListItem key={opt.value} button onClick={() => handleToggle(opt.value)}>
-                                    <Checkbox checked={tempSelected.includes(opt.value)} />
-                                    <ListItemText primary={opt.label} />
-                                </ListItem>
-                            ))}
-                    </List>
-
-                    {/* Cancel & Apply Buttons */}
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <Button onClick={handleClose} color="secondary">
-                            Cancel
-                        </Button>
-                        <Button onClick={handleApply} variant="contained" color="primary">
-                            OK
-                        </Button>
-                    </div>
-                </div>
+                        OK
+                    </Button>
+                </Box>
             </Popover>
         </div>
     );

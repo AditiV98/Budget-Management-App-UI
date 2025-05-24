@@ -19,6 +19,9 @@ import CustomDateFilter from "./CustomDateFilter";
 import FilterDropdown from "./FilterDropdown";
 import Sidebar from "./PermanentDrawerLeft";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { fetchSavings} from "../features/saving/savingSlice";
+import CloseIcon from '@mui/icons-material/Close';
+import Alert from '@mui/material/Alert';
 
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
@@ -51,6 +54,7 @@ const columns = [
   { id: "description", label: "DESCRIPTION", minWidth: 180 },
   { id: "transactionDate", label: "TRANSACTION DATE", minWidth: 150 },
   { id: "createdAt", label: "CREATED AT", minWidth: 150 },
+  { id: "withdrawFrom", label: "WITHDRAW FROM", minWidth: 150 },
   { id: "actions", label: "ACTIONS", minWidth: 100 },
 ];
 
@@ -58,6 +62,8 @@ const typeOptions = [
   { label: "Income", value: "INCOME" },
   { label: "Expense", value: "EXPENSE" },
   { label: "Savings", value: "SAVINGS" },
+  { label: "Withdraw", value: "WITHDRAW" },
+  { label: "SelfTransfer", value: "SELF TRANSFER" },
 ];
 
 const categoryOptions = [
@@ -91,8 +97,9 @@ const categoryOptions = [
 
 export default function Transactions() {
   const dispatch = useDispatch();
-  const transactions = useSelector((state) => state.transaction?.transactions) || [];
+  const { transactions, error } = useSelector((state) => state.transaction);
   const accounts = useSelector((state) => state.account?.accounts) || [];
+  const savings = useSelector((state) => state.savings?.savings) || [];
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(12);
   const [open, setOpen] = useState(false);
@@ -113,6 +120,22 @@ export default function Transactions() {
   const [selectedYear, setSelectedYear] = useState(dayjs().year()); // e.g., 2024
   const [isCustomMode, setIsCustomMode] = useState(false);
 
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const accountOptions = accounts.map((acc) => ({
+    label: acc.name,
+    value: acc.id,
+  }));
+  
+  const [accountFilter, setAccountFilter] = useState([]);
+
+  useEffect(() => {
+    if (error) {
+      setErrorMessage(error); 
+      setOpenErrorDialog(true);
+    }
+  }, [error]);
 
   useEffect(() => {
     if (selectedMonth?.startDate && selectedMonth?.endDate) {
@@ -129,9 +152,13 @@ export default function Transactions() {
         categoryFilter.forEach((category) => params.append("category", category));
       }
 
+      if (accountFilter?.length) {
+        accountFilter.forEach((acc) => params.append("accountID", acc));
+      }
+
       dispatch(fetchTransactions(params));
     }
-  }, [dispatch, selectedMonth, typeFilter, categoryFilter]);
+  }, [dispatch, selectedMonth, typeFilter, categoryFilter,accountFilter]);
 
   useEffect(() => {
     if (!isCustomMode && selectedYear && selectedMonthNum >= 0) {
@@ -146,6 +173,12 @@ export default function Transactions() {
       dispatch(fetchAccounts());
     }
   }, [dispatch, accounts]);
+
+  useEffect(() => {
+    if (savings.length === 0) { 
+      dispatch(fetchSavings());
+    }
+  }, [dispatch, savings]);
 
   const handleOpen = (transaction = null) => {
     setIsEditMode(!!transaction);
@@ -162,7 +195,7 @@ export default function Transactions() {
       setSelectedType(transaction.type || "");
 
       let categories = [];
-      if (transaction.type === "SAVINGS") {
+      if (transaction.type === "SAVINGS" || transaction.type === "WITHDRAW") {
         categories = account?.savingCategories || [];
       } else if (transaction.type === "EXPENSE") {
         categories = account?.expenseCategories || [];
@@ -195,33 +228,52 @@ export default function Transactions() {
         account: account.name, // Store account name
         category: "", // Reset category when account changes
       }));
-    }
-
-    if (name === "type") {
+    }else if (name === "type") {
       setSelectedType(value);
       setSelectedTransaction((prev) => ({
         ...prev,
         type: value,
         category: "", // Reset category when type changes
       }));
-    }
+    }else if (name==="withdrawFrom"){
+      const saving = savings.find((s) => s.id === Number(value));
 
-    setSelectedTransaction((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+      if (saving) {
+        setSelectedTransaction((prev) => ({
+          ...prev,
+          withdrawFrom: saving.id,                      // for display in Select
+          withdrawFromTransactionID: saving.transactionID,  // for backend submission
+        }));
+      }
+    }else if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+  setSelectedTransaction((prev) => ({
+    ...prev,
+    [parent]: {
+      ...(prev[parent] || {}), // ensure it's not undefined
+      [child]: value,
+    },
+  }));
+    } else{
+      setSelectedTransaction((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   useEffect(() => {
     if (selectedAccount && selectedType) {
       let categories = [];
 
-      if (selectedType === "SAVINGS") {
+      if (selectedType === "SAVINGS" || selectedType === "WITHDRAW" ) {
         categories = selectedAccount.savingCategories;
       } else if (selectedType === "EXPENSE") {
         categories = selectedAccount.expenseCategories;
       } else if (selectedType === "INCOME") {
         categories = ["Salary", "Interest","Refund","Other"]; // Fixed categories for INCOME
+      } else if (selectedType === "SELF TRANSFER"){
+        categories = ["Self Transfer"];
       }
 
       setFilteredCategories(categories || []);
@@ -233,8 +285,8 @@ export default function Transactions() {
   const handleSubmit = () => {
     if (!selectedTransaction) return;
 
-    const transactionDateUTC = new Date(selectedTransaction.transactionDate).toISOString();
-
+    const transactionDateUTC =selectedTransaction.transactionDate ? new Date(selectedTransaction.transactionDate).toISOString() : null;
+    
     const transactionData = {
       account: { id: selectedTransaction.accountId },
       amount: Number(selectedTransaction.amount),
@@ -242,7 +294,14 @@ export default function Transactions() {
       category: selectedTransaction.category,
       description: selectedTransaction.description,
       transactionDate: transactionDateUTC,
+      withdrawFrom:selectedTransaction.withdrawFromTransactionID
     };
+
+    if (selectedTransaction.type === "SELF TRANSFER" && selectedTransaction.metaData) {
+      transactionData.metaData = {
+        transferTo: selectedTransaction.metaData.transferTo,
+      };
+    }
 
     if (selectedTransaction.id) {
       dispatch(updateTransaction({ id: selectedTransaction.id, data: transactionData }));
@@ -284,6 +343,8 @@ export default function Transactions() {
       return;
     }
 
+    console.log("came inside csv upload")
+
     Papa.parse(selectedCSVFile, {
       header: true,
       skipEmptyLines: true,
@@ -291,26 +352,40 @@ export default function Transactions() {
         let counter = 0; // Counter to increment time
 
         const transactionsData = results.data.map((row) => {
-          // Parse "Tran Date" in DD-MM-YYYY format
-          const dateParts = row["Tran Date"].split("-");
-          const parsedDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}T00:00:00Z`);
+          console.log(row)
+          
+          const tranDateStr = row.TransactionDate;
+if (!tranDateStr) return null;
 
-          // Validate date
-          if (isNaN(parsedDate.getTime())) {
-            console.error("Invalid date found in row:", row["Tran Date"]);
-            return null; // Skip invalid rows
-          }
+// Parse "01 May 2023, 05:30 AM" into a Date object
+const parsedDate = new Date(tranDateStr);
+
+// Validate date
+if (isNaN(parsedDate.getTime())) {
+  return null; // Skip invalid rows
+}
 
           // Increment time component to preserve order
           parsedDate.setSeconds(parsedDate.getSeconds() + counter);
           counter++;
 
+           // 🔍 Match account name from CSV with accountsList
+        const matchingAccount = accounts.find(
+          (account) => account.name.toLowerCase().trim() === row.Account.toLowerCase().trim()
+        );
+
+        if (!matchingAccount) {
+          console.warn(`Account not found for: ${row.Account}`);
+          return null;
+        }
+
+        console.log(matchingAccount)
           return {
-            account: { id: selectedCSVAccount },
-            amount: row.Debit ? Number(row.Debit) : Number(row.Credit),
-            type: row.Debit ? "EXPENSE" : "INCOME",
+            account: { id: matchingAccount.id },
+            amount: parseFloat(row.Amount),
+            type: row.Type,
             category: row.Category,
-            description: row.Particulars,
+            description: row.Description,
             transactionDate: parsedDate.toISOString(),
           };
         }).filter(Boolean); // Remove null values from invalid rows
@@ -328,7 +403,9 @@ export default function Transactions() {
   };
 
   const handleCSVDownload = () => {
-    if (!transactions || transactions.length === 0) return;
+    if (!transactions?.length) {
+      return 
+    }
   
     const csvData = transactions.map(txn => ({
       Account: txn?.account?.name || "",
@@ -366,6 +443,49 @@ export default function Transactions() {
                 pt: 8, 
               }}
           >
+
+<Dialog
+            open={openErrorDialog}
+            onClose={() => setOpenErrorDialog(false)}
+            sx={{
+                "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" }, // Blurred background
+                "& .MuiPaper-root": {
+                    borderRadius: "12px",
+                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
+                    backgroundColor: "rgba(255, 255, 255, 0.85)",
+                    backdropFilter: "blur(10px)",
+                    position: "relative" // Needed for absolute positioning of CloseIcon
+                }
+            }}
+        >
+            {/* Close Button at Top Right */}
+            <IconButton
+                onClick={() => setOpenErrorDialog(false)}
+                sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    color: "#666",
+                    "&:hover": { color: "#000" }
+                }}
+            >
+                <CloseIcon />
+            </IconButton>
+
+            <DialogTitle sx={{ fontWeight: "bold", color: "#333" }}>Error</DialogTitle>
+
+            <DialogContent>
+                <Alert severity="error"
+                       sx={{
+                           backgroundColor: "#ffecec",
+                           color: "#d32f2f",
+                           borderRadius: "8px"
+                       }}
+                >
+                    {errorMessage}
+                </Alert>
+            </DialogContent>
+        </Dialog>
 
     <Box sx={{ height: "calc(100vh - 80px)", display: "flex", flexDirection: "column"}}>
     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexWrap: 'wrap', position: 'relative' }}>
@@ -594,7 +714,7 @@ export default function Transactions() {
                     style={{ minWidth: column.minWidth }}
                     sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <Box sx={{ display: "flex", alignItems: "center"}}>
                       {column.label}
 
                       {/* Show FilterDropdown only for "Type" column */}
@@ -614,6 +734,14 @@ export default function Transactions() {
                       />
                       )}
 
+{column.label === "ACCOUNT" && (
+  <FilterDropdown
+    options={accountOptions}
+    selected={accountFilter}
+    onChange={setAccountFilter}
+  />
+)}
+
                     </Box>
 
                   </TableCell>
@@ -629,7 +757,7 @@ export default function Transactions() {
                   sx={{ backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white", "&:hover": { backgroundColor: "#e3f2fd" } }}
                 >
                   {columns.map((column) => (
-                    <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1 }}>
+                    <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1.1 }}>
                       {column.id === "actions" ? (
                         <>
                           <Tooltip title="Edit">
@@ -663,7 +791,7 @@ export default function Transactions() {
         <TablePagination
           rowsPerPageOptions={[12]}
           component="div"
-          count={transactions.length}
+          count={transactions?.length ?? 0}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -763,6 +891,8 @@ export default function Transactions() {
             <MenuItem value="INCOME" sx={{ fontSize: '12px' }}>INCOME</MenuItem>
             <MenuItem value="SAVINGS" sx={{ fontSize: '12px' }}>SAVINGS</MenuItem>
             <MenuItem value="EXPENSE" sx={{ fontSize: '12px' }}>EXPENSE</MenuItem>
+            <MenuItem value="WITHDRAW" sx={{ fontSize: '12px' }}>WITHDRAW</MenuItem>
+            <MenuItem value="SELF TRANSFER" sx={{ fontSize: '12px' }}>SELF TRANSFER</MenuItem>
           </TextField>
           <TextField
               select
@@ -799,6 +929,81 @@ export default function Transactions() {
                 <MenuItem disabled>No categories available</MenuItem>
             )}
           </TextField>
+          {selectedTransaction?.type === "SELF TRANSFER" && (
+  <TextField
+    select
+    label="Transfer To"
+    name="metaData.transferTo"
+    fullWidth
+    margin="normal"
+    value={selectedTransaction?.metaData?.transferTo || ""}
+    onChange={handleChange}
+    InputLabelProps={{
+      sx: {
+        fontSize: '12px',
+        "&.Mui-focused": { fontSize: '12px' },
+        "&.MuiInputLabel-shrink": { fontSize: '12px' },
+      }
+    }}
+    sx={{
+      fontSize: '12px',
+      "& .MuiSelect-select": {
+        fontSize: '12px',
+      },
+      "& .MuiInputBase-input": {
+        fontSize: '12px',
+      },
+    }}
+  >
+    {accounts
+      .filter((acc) => acc.id !== selectedTransaction?.accountId)
+      .map((acc) => (
+        <MenuItem key={acc.id} value={acc.id} sx={{ fontSize: '12px' }}>
+          {acc.name}
+        </MenuItem>
+      ))}
+  </TextField>
+)}
+
+          {selectedTransaction?.type === "WITHDRAW" && (
+          <TextField
+              select
+              label="Withdraw From"
+              name="withdrawFrom"
+              fullWidth
+              margin="normal"
+              value={selectedTransaction?.withdrawFrom || ""}
+              onChange={handleChange}
+              InputLabelProps={{
+                sx: {
+                  fontSize: '12px',
+                  "&.Mui-focused": { fontSize: '12px' },
+                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
+                }
+              }}
+              sx={{
+                fontSize: '12px',
+                "& .MuiSelect-select": {
+                  fontSize: '12px',   // font size of selected value inside select input
+                },
+                "& .MuiInputBase-input": {
+                  fontSize: '12px',   // fallback for normal inputs
+                },
+              }} 
+          >
+             {savings.filter(s => s.category === selectedTransaction?.category).length > 0 ? (
+    savings
+      .filter(s => s.category === selectedTransaction?.category)
+      .map(saving => (
+        <MenuItem key={saving.id} value={saving.id} sx={{ fontSize: '12px' }}>
+          {saving.account.name} - {saving.category} - {saving.amount}
+        </MenuItem>
+      ))
+  ) : (
+    <MenuItem disabled>No matching savings available</MenuItem>
+  )}
+          </TextField>
+          )}
           <TextField 
           InputLabelProps={{
             sx: {

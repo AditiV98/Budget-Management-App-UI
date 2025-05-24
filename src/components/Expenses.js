@@ -1,23 +1,21 @@
 import * as React from 'react';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Box from '@mui/material/Box';
 import {useEffect,useState} from "react";
 import {fetchTransactions} from "../features/transactions/transactionsSlice";
 import {useDispatch, useSelector} from "react-redux";
 import {fetchAccounts} from "../features/accounts/accountSlice";
 import {format, toZonedTime} from "date-fns-tz";
 import dayjs from "dayjs";
-import {MenuItem, Select} from "@mui/material";
 import {useFilterContext} from "./FilterContext";
 import CustomDateFilter from "./CustomDateFilter";
 import Sidebar from "./PermanentDrawerLeft";
+import FilterDropdown from "./FilterDropdown";
+import {
+  Box, Button, Paper, Table, TableBody, TableCell, TableContainer,
+  TableHead, TablePagination, TableRow, Dialog, DialogTitle, DialogContent,
+  DialogActions, TextField, MenuItem, Tooltip, IconButton, Select
+} from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
+import Alert from '@mui/material/Alert';
 
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
@@ -52,9 +50,32 @@ const columns = [
   { id: "createdAt", label: "CREATED AT", minWidth: 150 },
 ];
 
+
+const categoryOptions = [
+  { label: "Housing", value: "Housing" },
+  { label: "Utilities", value: "Utilities" },
+  { label: "Groceries", value: "Groceries" },
+  { label: "Transportation", value: "Transportation" },
+  { label: "Education", value: "Education" },
+  { label: "Healthcare", value: "Healthcare" },
+  { label: "Loan & Debt Payments", value: "Loan & Debt Payments" },
+  { label: "Dining Out", value: "Dining Out" },
+  { label: "Entertainment", value: "Entertainment" },
+  { label: "Shopping", value: "Shopping" },
+  { label: "Travel", value: "Travel" },
+  { label: "Gifts & Donations", value: "Gifts & Donations" },
+  { label: "Fitness & Wellness", value: "Fitness & Wellness" },
+  { label: "Childcare", value: "Childcare" },
+  { label: "Home Maintenance", value: "Home Maintenance" },
+  { label: "Pet Care", value: "Pet Care" },
+  { label: "Self-Development", value: "Self-Development" },
+  { label: "Tax", value: "Tax" },
+  { label: "Other", value: "Other" },
+];
+
 export default function Expenses() {
   const dispatch = useDispatch();
-  const transactions = useSelector((state) => state.transaction?.transactions) || [];
+  const { transactions, error } = useSelector((state) => state.transaction);
   const accounts = useSelector((state) => state.account?.accounts) || [];
   const { selectedMonth, updateMonth } = useFilterContext(); // Call the hook directly
   const [showCustomFilter, setShowCustomFilter] = useState(false);
@@ -64,13 +85,44 @@ export default function Expenses() {
   const [isCustomMode, setIsCustomMode] = useState(false);
 
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(15);
+  const [rowsPerPage, setRowsPerPage] = React.useState(12);
+
+  const [accountFilter, setAccountFilter] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState([]);
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const accountOptions = accounts.map((acc) => ({
+    label: acc.name,
+    value: acc.id,
+  }));
+  
+  useEffect(() => {
+    if (error) {
+      setErrorMessage(error); 
+      setOpenErrorDialog(true);
+    }
+  }, [error]);
 
   useEffect(() => {
     if (selectedMonth?.startDate && selectedMonth?.endDate) {
-      dispatch(fetchTransactions({type: 'EXPENSE',startDate: selectedMonth.startDate, endDate: selectedMonth.endDate}))
+      const params = new URLSearchParams({
+        startDate: selectedMonth.startDate,
+        endDate: selectedMonth.endDate,
+        type: 'EXPENSE'
+      });
+
+      if (categoryFilter?.length) {
+        categoryFilter.forEach((category) => params.append("category", category));
+      }
+
+      if (accountFilter?.length) {
+        accountFilter.forEach((acc) => params.append("accountID", acc));
+      }
+
+      dispatch(fetchTransactions(params));
     }
-  }, [dispatch, selectedMonth]);
+  }, [dispatch, selectedMonth,categoryFilter,accountFilter]);
 
   useEffect(() => {
     if (!isCustomMode && selectedYear && selectedMonthNum >= 0) {
@@ -125,6 +177,49 @@ export default function Expenses() {
             pt: 8, 
           }}
       >
+
+<Dialog
+            open={openErrorDialog}
+            onClose={() => setOpenErrorDialog(false)}
+            sx={{
+                "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" }, // Blurred background
+                "& .MuiPaper-root": {
+                    borderRadius: "12px",
+                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
+                    backgroundColor: "rgba(255, 255, 255, 0.85)",
+                    backdropFilter: "blur(10px)",
+                    position: "relative" // Needed for absolute positioning of CloseIcon
+                }
+            }}
+        >
+            {/* Close Button at Top Right */}
+            <IconButton
+                onClick={() => setOpenErrorDialog(false)}
+                sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    color: "#666",
+                    "&:hover": { color: "#000" }
+                }}
+            >
+                <CloseIcon />
+            </IconButton>
+
+            <DialogTitle sx={{ fontWeight: "bold", color: "#333" }}>Error</DialogTitle>
+
+            <DialogContent>
+                <Alert severity="error"
+                       sx={{
+                           backgroundColor: "#ffecec",
+                           color: "#d32f2f",
+                           borderRadius: "8px"
+                       }}
+                >
+                    {errorMessage}
+                </Alert>
+            </DialogContent>
+        </Dialog>
 
 
 <Box sx={{ height: "calc(100vh - 80px)", display: "flex", flexDirection: "column"}}>
@@ -281,7 +376,26 @@ export default function Expenses() {
                         style={{ minWidth: column.minWidth }}
                         sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
                     >
+                       <Box sx={{ display: "flex", alignItems: "center"}}>
                       {column.label}
+
+                      {column.label === "CATEGORY" && (
+                      <FilterDropdown
+                          options={categoryOptions}
+                          selected={categoryFilter}
+                          onChange={setCategoryFilter}
+                      />
+                      )}
+
+{column.label === "ACCOUNT" && (
+  <FilterDropdown
+    options={accountOptions}
+    selected={accountFilter}
+    onChange={setAccountFilter}
+  />
+)}
+
+                    </Box>
                   </TableCell>
                 ))}
               </TableRow>
@@ -295,7 +409,7 @@ export default function Expenses() {
                       sx={{ backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white", "&:hover": { backgroundColor: "#e3f2fd" } }}
                   >
                     {columns.map((column) => (
-                        <TableCell key={column.id} sx={{ fontSize: "0.70rem", py: 1 }}>
+                        <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 2 }}>
                           {column.id === "account" ? (
                               row.account.name // Extract account name instead of showing the entire object
                           ) : column.id === "transactionDate" || column.id === "createdAt" ? (
@@ -318,7 +432,7 @@ export default function Expenses() {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[15]}
+          rowsPerPageOptions={[12]}
           component="div"
           count={transactions.length}
           rowsPerPage={rowsPerPage}

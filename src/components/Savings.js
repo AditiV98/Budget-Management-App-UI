@@ -8,7 +8,8 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Box from '@mui/material/Box';
-import {MenuItem, Select, Tooltip,IconButton} from '@mui/material';
+import {MenuItem, Select, Tooltip,IconButton,Dialog, DialogTitle, DialogContent,
+  DialogActions, Button,TextField} from '@mui/material';
 import {useDispatch, useSelector} from "react-redux";
 import {useEffect,useState} from "react";
 import {fetchTransactions} from "../features/transactions/transactionsSlice";
@@ -19,8 +20,10 @@ import dayjs from "dayjs";
 import CustomDateFilter from "./CustomDateFilter";
 import FilterDropdown from "./FilterDropdown";
 import Sidebar from "./PermanentDrawerLeft";
-import {fetchSavings} from "../features/saving/savingSlice"
+import {fetchSavings,updateSavings} from "../features/saving/savingSlice"
 import EditIcon from "@mui/icons-material/Edit";
+import CloseIcon from '@mui/icons-material/Close';
+import Alert from '@mui/material/Alert';
 
 const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
 
@@ -45,15 +48,28 @@ const formatDate = (dateString) => {
   }
 };
 
+const labelSx = {
+  fontSize: '12px',
+  "&.Mui-focused": { fontSize: '12px' },
+  "&.MuiInputLabel-shrink": { fontSize: '12px' },
+};
+
+const inputSx = {
+  fontSize: '12px',
+  "& .MuiSelect-select": { fontSize: '12px' },
+  "& .MuiInputBase-input": { fontSize: '12px' },
+};
+
 const columns = [
- { id: 'account', label: 'ACCOUNT', minWidth: 170 },
-  { id: 'amount', label: 'AMOUNT', minWidth: 100 },
-  {id: 'type',label: 'CATEGORY',minWidth: 170},
-  {id:'status',label:'STATUS',minWidth:170},
-  {id: 'currentValue',label: 'CURRENT VALUE',minWidth: 170},
-  { id: "startDate", label: "START DATE", minWidth: 170 },
-  {id: 'maturityDate',label: 'MATURITY DATE',minWidth: 170},
-  {id: 'createdAt',label: 'CREATED AT',minWidth: 170},
+ { id: 'account', label: 'ACCOUNT', minWidth: 100 },
+  { id: 'amount', label: 'INVESTED AMOUNT', minWidth: 150 },
+  {id: 'category',label: 'CATEGORY',minWidth: 100},
+  {id:'status',label:'STATUS',minWidth:100},
+  {id: 'currentValue',label: 'CURRENT VALUE',minWidth: 150},
+  { id: 'withdrawnAmount', label: 'WITHDRAWN AMOUNT', minWidth: 160 },
+  { id: "startDate", label: "START DATE", minWidth: 180 },
+  {id: 'maturityDate',label: 'MATURITY DATE',minWidth: 180},
+  {id: 'createdAt',label: 'CREATED AT',minWidth: 180},
   { id: "actions", label: "ACTIONS", minWidth: 100 },
 ];
 
@@ -68,7 +84,8 @@ const categoryOptions = [
 export default function Savings() {
   const dispatch = useDispatch();
  // const transactions = useSelector((state) => state.transaction?.transactions) || [];
- const savings = useSelector((state) => state.savings?.savings) || [];
+ const { savings = [], error = null } = useSelector((state) => state.savings || {});
+
   const accounts = useSelector((state) => state.account?.accounts) || [];
   const { selectedMonth, updateMonth } = useFilterContext(); // Call the hook directly
   const [showCustomFilter, setShowCustomFilter] = useState(false);
@@ -81,21 +98,44 @@ export default function Savings() {
   const [rowsPerPage, setRowsPerPage] = React.useState(12);
   const [categoryFilter, setCategoryFilter] = useState([]);
 
+  const [open, setOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const accountOptions = accounts.map((acc) => ({
+    label: acc.name,
+    value: acc.id,
+  }));
+  
+  const [accountFilter, setAccountFilter] = useState([]);
+
+  useEffect(() => {
+    if (error) {
+      setErrorMessage(error); 
+      setOpenErrorDialog(true);
+    }
+  }, [error]);
+
   useEffect(() => {
     if (selectedMonth?.startDate && selectedMonth?.endDate) {
       const params = new URLSearchParams({
         startDate: selectedMonth.startDate,
         endDate: selectedMonth.endDate,
-        type:'SAVINGS'
       });
 
       if (categoryFilter?.length) {
         categoryFilter.forEach((category) => params.append("category", category));
       }
 
+      if (accountFilter?.length) {
+        accountFilter.forEach((acc) => params.append("accountID", acc));
+      }
+
       dispatch(fetchSavings(params));
     }
-  }, [dispatch, selectedMonth, categoryFilter]);
+  }, [dispatch, selectedMonth, categoryFilter,accountFilter]);
 
   useEffect(() => {
     if (!isCustomMode && selectedYear && selectedMonthNum >= 0) {
@@ -136,9 +176,66 @@ export default function Savings() {
     setPage(0);
   };
 
-  const handleOpen = (transaction = null) => {
-   
+  const handleOpen = (saving = null) => {
+    if (saving) {
+      setSelectedTransaction({
+        id: saving.id,
+        transactionID: saving.transactionID || "",
+        amount: saving.amount?.toString() || "",
+        withdrawnAmount: saving.withdrawnAmount?.toString() || "",
+       // type: saving.type || "",
+        status: saving.status || "",
+        category: saving.category || "",
+        currentValue: saving.currentValue?.toString() || "",
+        startDate: saving.startDate ? saving.startDate.split("T")[0] : "", 
+        account: saving.account.name || "",
+        maturityDate:saving.maturityDate
+      });
+    } else {
+      setSelectedTransaction(null);
+    }
+  
+    setOpen(true);
   };
+  
+  const handleSubmit = () => {
+    if (!selectedTransaction) return;
+
+    const maturityDateUTC = selectedTransaction.maturityDate
+    ? new Date(selectedTransaction.maturityDate).toISOString()
+    : null;
+
+    const transactionData = {
+      account: { id: selectedTransaction.accountId },
+      amount: Number(selectedTransaction.amount),
+      category: selectedTransaction.category,
+      status: selectedTransaction.status,
+      currentValue:Number(selectedTransaction.currentValue),
+      withdrawnAmount:Number(selectedTransaction.withdrawnAmount),
+      description: selectedTransaction.description,
+      maturityDate:maturityDateUTC,
+    };
+
+    if (selectedTransaction.id) {
+      dispatch(updateSavings({ id: selectedTransaction.id, data: transactionData }));
+    } 
+
+    handleClose();
+  };
+
+  const handleClose = () => {
+    document.activeElement.blur();
+    setSelectedTransaction(null);
+    setOpen(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedTransaction((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };  
 
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -153,6 +250,49 @@ export default function Savings() {
             pt: 8, 
           }}
       >
+
+<Dialog
+            open={openErrorDialog}
+            onClose={() => setOpenErrorDialog(false)}
+            sx={{
+                "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" }, // Blurred background
+                "& .MuiPaper-root": {
+                    borderRadius: "12px",
+                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
+                    backgroundColor: "rgba(255, 255, 255, 0.85)",
+                    backdropFilter: "blur(10px)",
+                    position: "relative" // Needed for absolute positioning of CloseIcon
+                }
+            }}
+        >
+            {/* Close Button at Top Right */}
+            <IconButton
+                onClick={() => setOpenErrorDialog(false)}
+                sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    color: "#666",
+                    "&:hover": { color: "#000" }
+                }}
+            >
+                <CloseIcon />
+            </IconButton>
+
+            <DialogTitle sx={{ fontWeight: "bold", color: "#333" }}>Error</DialogTitle>
+
+            <DialogContent>
+                <Alert severity="error"
+                       sx={{
+                           backgroundColor: "#ffecec",
+                           color: "#d32f2f",
+                           borderRadius: "8px"
+                       }}
+                >
+                    {errorMessage}
+                </Alert>
+            </DialogContent>
+        </Dialog>
 
 <Box sx={{ height: "calc(100vh - 80px)", display: "flex", flexDirection: "column"}}>
 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexWrap: 'wrap', position: 'relative' }}>
@@ -308,16 +448,24 @@ export default function Savings() {
                     style={{ minWidth: column.minWidth }}
                     sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                       <Box sx={{ display: "flex", alignItems: "center",}}>
                       {column.label}
 
                       {column.label === "CATEGORY" && (
-                          <FilterDropdown
-                              options={categoryOptions}
-                              selected={categoryFilter}
-                              onChange={setCategoryFilter}
-                          />
+                      <FilterDropdown
+                          options={categoryOptions}
+                          selected={categoryFilter}
+                          onChange={setCategoryFilter}
+                      />
                       )}
+
+{column.label === "ACCOUNT" && (
+  <FilterDropdown
+    options={accountOptions}
+    selected={accountFilter}
+    onChange={setAccountFilter}
+  />
+)}
 
                     </Box>
                   </TableCell>
@@ -325,12 +473,12 @@ export default function Savings() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {Array.isArray(savings) && savings?.length > 0 ? (
+            {Array.isArray(savings) && savings.length > 0 ? (
               savings.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index} hover sx={{backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white",
                       "&:hover": { backgroundColor: "#e3f2fd" }}}>
                     {columns.map((column) => (
-                        <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1 }}>
+                        <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1.1 }}>
                           {column.id === "actions" ? (
                         <>
                           <Tooltip title="Edit">
@@ -339,7 +487,7 @@ export default function Savings() {
                         </>
                       ) : column.id === "account" ? (
                               row.account.name // Extract account name instead of showing the entire object
-                          ) : column.id === "startDate" || column.id === "createdAt" ? (
+                          ) : column.id === "startDate" || column.id === "createdAt" || column.id==="maturityDate" ? (
                               formatDate(row[column.id]) // ✅ Correctly format the date values
                           ) : (
                               row[column.id]
@@ -380,6 +528,118 @@ export default function Savings() {
          }}
         />
       </Paper>
+
+      <Dialog open={open} onClose={handleClose} PaperProps={{
+    sx: {
+      width: '500px', // adjust as needed
+      maxWidth: '90%', // responsive limit
+      fontSize: '12px',
+      height:'600px'
+    },
+  }}>
+        <DialogTitle sx={{ fontSize: '16px' }}>{"Edit Saving"}</DialogTitle>
+        <DialogContent sx={{ px: 2, py: 1, fontSize: '8px' }}>
+  <TextField
+    label="Account"
+    name="account"
+    fullWidth
+    margin="normal"
+    value={selectedTransaction?.account || ""}
+    disabled
+    InputLabelProps={{ sx: labelSx }}
+    sx={inputSx}
+  />
+
+  <TextField
+    label="Invested Amount"
+    name="amount"
+    fullWidth
+    margin="normal"
+    value={selectedTransaction?.amount || ""}
+    disabled
+    InputLabelProps={{ sx: labelSx }}
+    sx={inputSx}
+  />
+
+  <TextField
+    label="Category"
+    name="category"
+    fullWidth
+    margin="normal"
+    value={selectedTransaction?.category || ""}
+    disabled
+    InputLabelProps={{ sx: labelSx }}
+    sx={inputSx}
+  />
+
+  <TextField
+    label="Status"
+    name="status"
+    fullWidth
+    margin="normal"
+    value={selectedTransaction?.status || ""}
+    InputLabelProps={{ sx: labelSx }}
+    sx={inputSx}
+    select
+    onChange={handleChange}
+  >
+    <MenuItem value="ACTIVE" sx={{ fontSize: '12px' }}>ACTIVE</MenuItem>
+    <MenuItem value="INACTIVE" sx={{ fontSize: '12px' }}>INACTIVE</MenuItem>
+  </TextField>
+
+  <TextField
+    label="Current Value"
+    name="currentValue"
+    fullWidth
+    type="number"
+    margin="normal"
+    value={selectedTransaction?.currentValue || ""}
+    onChange={handleChange}
+    InputLabelProps={{ sx: labelSx }}
+    sx={inputSx}
+  />
+
+  <TextField
+    label="Withdrawn Amount"
+    name="withdrawnAmount"
+    fullWidth
+    margin="normal"
+    value={selectedTransaction?.withdrawnAmount || ""}
+    disabled
+    InputLabelProps={{ sx: labelSx }}
+    sx={inputSx}
+  />
+
+  <TextField
+    label="Start Date"
+    name="startDate"
+    type="date"
+    fullWidth
+    margin="normal"
+    value={selectedTransaction?.startDate?.slice(0, 10) || ""}
+    disabled
+    InputLabelProps={{ shrink: true, sx: labelSx }}
+    sx={inputSx}
+  />
+
+  <TextField
+    label="Maturity Date"
+    name="maturityDate"
+    type="datetime-local"
+    fullWidth
+    margin="normal"
+    value={selectedTransaction?.maturityDate || ""}
+    onChange={handleChange}
+    InputLabelProps={{ shrink: true, sx: labelSx }}
+    sx={inputSx}
+  />
+</DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" color="primary">{ "Update"}</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
     </Box>
       </Box>

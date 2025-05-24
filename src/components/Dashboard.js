@@ -480,15 +480,13 @@ useEffect(() => {
   {pieCharts.map((chart, index) => (
     <Grid item sm={6} md={3} key={index}>
       <Card
-        sx={{
-          background: "rgba(255, 255, 255, 0.75)",
-          borderRadius: "12px",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+         sx={{
+          background: "rgba(255, 255, 255, 0.8)",
+          borderRadius: "16px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
           textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          p: 1,
+          p: 1.5,
+          height: "100%",
         }}
       >
         <CardContent
@@ -506,7 +504,7 @@ useEffect(() => {
 
           {Array.isArray(chart.data) &&
           chart.data.some((entry) => entry.value > 0) ? (
-            <ResponsiveContainer width="100%" height={160}>
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={chart.data}
@@ -514,38 +512,43 @@ useEffect(() => {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  outerRadius="60%"
-                  innerRadius="30%"
-                  paddingAngle={5}
+                  outerRadius="80%"
+                  innerRadius="50%"
+                  paddingAngle={3}
                   label={false}
+                  labelLine={false}
                 >
                   {chart.data.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
+
                 <Tooltip
-                  content={({ payload }) => {
-                    if (payload && payload.length) {
-                     const data = payload[0];
-                     return (
-                     <div style={{
-                        background: "#fff",
-                        border: "1px solid #ccc",
-                        padding: "8px",
-                        fontSize: "0.75rem",
-                        borderRadius: "6px",
-                        }}>
-                       <div><strong>{data.name}</strong>: ₹{data.value.toLocaleString()}</div>
-                     </div>
-                    );
-                   }
-                  return null;
-                  }}
-                />
-                <Legend
+  content={({ payload }) => {
+    if (payload && payload.length) {
+      const data = payload[0];
+      return (
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #ccc",
+            padding: "8px",
+            fontSize: "0.75rem",
+            borderRadius: "6px",
+          }}
+        >
+          <div><strong>{data.payload.name}</strong>: ₹{data.payload.value.toLocaleString()}</div>
+        </div>
+      );
+    }
+    return null;
+  }}
+/>
+
+                {/* <Legend
                   wrapperStyle={{ fontSize: "0.6rem", paddingTop: 4 }}
                   iconSize={8}
-                />
+                /> */}
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -570,13 +573,10 @@ useEffect(() => {
     }}
   >
     <Typography
-      variant="subtitle1"
-      sx={{
-        mb: 2,
-        color: "#4B4B7C",
-      }}
-    >
-      📈 Spending Trend - {dayjs(selectedMonth?.startDate).format("MMMM YYYY")}
+            variant="caption"
+            sx={{ fontWeight: 500, fontSize: "0.75rem", mb: 1 }}
+          >
+      Spending Trend - {dayjs(selectedMonth?.startDate).format("MMMM YYYY")}
     </Typography>
 
     <ResponsiveContainer width="100%" height={200}>

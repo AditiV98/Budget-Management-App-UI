@@ -123,9 +123,12 @@ export default function RecurringTransaction(){
     
       const handleSubmit = () => {
         if (!selectedTransaction) return;
-    
-        const startDateUTC = new Date(selectedTransaction.startDate).toISOString();
-        const endDateUTC = new Date(selectedTransaction.endDate).toISOString();
+
+        const startDateUTC=  selectedTransaction.startDate
+    ? new Date(selectedTransaction.startDate).toISOString()
+    : null;
+
+    const endDateUTC =selectedTransaction.endDate ? new Date(selectedTransaction.endDate).toISOString() : null;
     
         const transactionData = {
           account: { id: selectedTransaction.accountId },
