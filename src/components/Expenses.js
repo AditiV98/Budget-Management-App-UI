@@ -16,8 +16,7 @@ import {
 } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
-
-const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
+import { useTheme } from "@mui/material/styles";
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -47,7 +46,6 @@ const columns = [
   { id: "category", label: "CATEGORY", minWidth: 120 },
   { id: "description", label: "DESCRIPTION", minWidth: 180 },
   { id: "transactionDate", label: "TRANSACTION DATE", minWidth: 150 },
-  { id: "createdAt", label: "CREATED AT", minWidth: 150 },
 ];
 
 
@@ -74,6 +72,8 @@ const categoryOptions = [
 ];
 
 export default function Expenses() {
+  const theme = useTheme();
+  const pageBackground = theme.palette.background.gradient;
   const dispatch = useDispatch();
   const { transactions, error } = useSelector((state) => state.transaction);
   const accounts = useSelector((state) => state.account?.accounts) || [];
@@ -224,23 +224,22 @@ export default function Expenses() {
 
 <Box sx={{ height: "calc(100vh - 80px)", display: "flex", flexDirection: "column"}}>
 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexWrap: 'wrap', position: 'relative' }}>
-                {/* Month Dropdown */}
-<Select
+               <Select
   value={selectedMonthNum}
   onChange={(e) => setSelectedMonthNum(parseInt(e.target.value))}
   sx={{
     width: 110,
     height: 30,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    background: theme.palette.filters.dropdown,
     borderRadius: "6px",
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    boxShadow: theme.palette.filters.dropdownShadow,
     mr: 1,
     p:1,
     '& .MuiSelect-select': {
       padding: '1px 1px',
       fontSize: '0.75rem',
       fontWeight: '500',
-      color: '#333',
+      color: theme.palette.filters.dropdownColor,
     },
   }}
   MenuProps={{
@@ -272,16 +271,16 @@ export default function Expenses() {
   sx={{
     width: 110,
     height: 30,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    background: theme.palette.filters.dropdown,
     borderRadius: "6px",
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    boxShadow: theme.palette.filters.dropdownShadow,
     mr: 1,
     p:1,
     '& .MuiSelect-select': {
       padding: '1px 1px',
       fontSize: '0.75rem',
       fontWeight: '500',
-      color: '#333',
+      color: theme.palette.filters.dropdownColor,
     },
   }}
   MenuProps={{
@@ -317,16 +316,16 @@ export default function Expenses() {
   sx={{
               width: 110,
               height: 30,
-              background: "linear-gradient(135deg, #fff, #fce4ec)",
+              background: theme.palette.filters.dropdown,
               borderRadius: "6px",
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+              boxShadow: theme.palette.filters.dropdownShadow,
               mr: 1,
               p:1,
               '& .MuiSelect-select': {
                 padding: '1px 1px',
                 fontSize: '0.75rem',
                 fontWeight: '500',
-                color: '#333',
+                color: theme.palette.filters.dropdownColor,
               },
             }}
             MenuProps={{
@@ -365,16 +364,30 @@ export default function Expenses() {
 )}
             </Box>
 
-            <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", borderRadius: "10px", overflow: "hidden",fontSize: "0.75rem",p:1 }}>
-        <TableContainer sx={{ flexGrow: 1, overflow: "auto" ,borderRadius: "10px",}}>
+            <Paper sx={{
+    flexGrow: 1,
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: "10px",
+    overflow: "hidden",
+    fontSize: "0.75rem",
+    p: 1,
+    background: theme.palette.table.paperBackground,
+  }}>
+        <TableContainer sx={{
+    flexGrow: 1,
+    overflow: "auto",
+    borderRadius: "10px",
+    border: `1px solid ${theme.palette.table.borderColor}`,
+  }}>
         <Table stickyHeader size="small"> 
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: "#1E88E5" }}>
+                  <TableRow sx={{ backgroundColor: theme.palette.table.headerRow  }}>
                 {columns.map((column) => (
                     <TableCell
                         key={column.id}
                         style={{ minWidth: column.minWidth }}
-                        sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
+                        sx={{ backgroundColor: theme.palette.table.tableCell, color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
                     >
                        <Box sx={{ display: "flex", alignItems: "center"}}>
                       {column.label}
@@ -401,18 +414,23 @@ export default function Expenses() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {Array.isArray(transactions) && transactions?.length > 0 ? (
+            {Array.isArray(transactions) && transactions?.length > 0 ? (
               transactions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow
                       key={row.id}
                       hover
-                      sx={{ backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white", "&:hover": { backgroundColor: "#e3f2fd" } }}
-                  >
+                      sx={{ borderColor: theme.palette.table.borderColor,backgroundColor: index % 2 === 0 ? (theme.palette.table.evenRow) : (theme.palette.table.oddRow), "&:hover": { backgroundColor:theme.palette.table.hoverColor}}}
+                      >
                     {columns.map((column) => (
-                        <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 2 }}>
+                        <TableCell key={column.id} sx={{
+                          fontSize: "0.65rem",
+                          py: 2,
+                          borderBottom: `1px solid ${theme.palette.table.borderColor}`,
+                          color: theme.palette.table.textColor,
+                        }}>
                           {column.id === "account" ? (
                               row.account.name // Extract account name instead of showing the entire object
-                          ) : column.id === "transactionDate" || column.id === "createdAt" ? (
+                          ) : column.id === "transactionDate" ? (
                               formatDate(row[column.id]) // ✅ Correctly format the date values
                           ) : (
                               row[column.id]
@@ -434,7 +452,7 @@ export default function Expenses() {
         <TablePagination
           rowsPerPageOptions={[12]}
           component="div"
-          count={transactions.length}
+          count={transactions?.length ?? 0}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

@@ -1,7 +1,8 @@
 import {createSlice,createAsyncThunk} from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/account"
+const API_URL = process.env.REACT_APP_API_BASE_URL+"/account"
+//http://127.0.0.1:50379
 
 export const createAccount=createAsyncThunk("account/createAccount",async(accountData,{rejectWithValue})=>{
 try{

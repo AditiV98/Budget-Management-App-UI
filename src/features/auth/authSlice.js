@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const GOOGLE_TOKEN_URL = "http://localhost:8000/google-token";
-const LOGIN_URL = "http://localhost:8000/login";
-const REFRESH_URL = "http://localhost:8000/refresh";
+const GOOGLE_TOKEN_URL = process.env.REACT_APP_API_BASE_URL+"/google-token"
+const LOGIN_URL = process.env.REACT_APP_API_BASE_URL+"/login"
+const REFRESH_URL = process.env.REACT_APP_API_BASE_URL+"/refresh"
 
 export const createGoogleToken = createAsyncThunk(
     "auth/googleToken",

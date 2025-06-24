@@ -1,7 +1,7 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/transaction"
+const API_URL = process.env.REACT_APP_API_BASE_URL+"/transaction"
 
 export const createTransaction=createAsyncThunk("transaction/createTransaction",async(transactionData,{rejectWithValue})=>{
     try{

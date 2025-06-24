@@ -1,8 +1,7 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/savings"
-
+const API_URL = process.env.REACT_APP_API_BASE_URL+"/savings"
 
 export const fetchSavings = createAsyncThunk(
     "savings/fetchSavings",

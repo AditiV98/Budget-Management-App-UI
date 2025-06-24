@@ -24,8 +24,7 @@ import {fetchSavings,updateSavings} from "../features/saving/savingSlice"
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
-
-const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
+import { useTheme } from "@mui/material/styles";
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -65,11 +64,11 @@ const columns = [
   { id: 'amount', label: 'INVESTED AMOUNT', minWidth: 150 },
   {id: 'category',label: 'CATEGORY',minWidth: 100},
   {id:'status',label:'STATUS',minWidth:100},
+  {id:'description',label:'DESCRIPTION',minWidth:150},
   {id: 'currentValue',label: 'CURRENT VALUE',minWidth: 150},
   { id: 'withdrawnAmount', label: 'WITHDRAWN AMOUNT', minWidth: 160 },
   { id: "startDate", label: "START DATE", minWidth: 180 },
   {id: 'maturityDate',label: 'MATURITY DATE',minWidth: 180},
-  {id: 'createdAt',label: 'CREATED AT',minWidth: 180},
   { id: "actions", label: "ACTIONS", minWidth: 100 },
 ];
 
@@ -81,7 +80,14 @@ const categoryOptions = [
   { label: "Gold ETFs", value: "Gold ETFs" },
 ];
 
+const statusOptions = [
+  {label:"ACTIVE", value:"ACTIVE"},
+  {label:"INACTIVE",value:"INACTIVE"},
+]
+
 export default function Savings() {
+  const theme = useTheme();
+  const pageBackground = theme.palette.background.gradient;
   const dispatch = useDispatch();
  // const transactions = useSelector((state) => state.transaction?.transactions) || [];
  const { savings = [], error = null } = useSelector((state) => state.savings || {});
@@ -110,6 +116,7 @@ export default function Savings() {
   }));
   
   const [accountFilter, setAccountFilter] = useState([]);
+  const [statusFilter, setStatusFilter] = useState([]);
 
   useEffect(() => {
     if (error) {
@@ -133,9 +140,13 @@ export default function Savings() {
         accountFilter.forEach((acc) => params.append("accountID", acc));
       }
 
+      if (statusFilter?.length) {
+        statusFilter.forEach((acc) => params.append("status", acc));
+      }
+
       dispatch(fetchSavings(params));
     }
-  }, [dispatch, selectedMonth, categoryFilter,accountFilter]);
+  }, [dispatch, selectedMonth, categoryFilter,accountFilter,statusFilter]);
 
   useEffect(() => {
     if (!isCustomMode && selectedYear && selectedMonthNum >= 0) {
@@ -303,16 +314,16 @@ export default function Savings() {
   sx={{
     width: 110,
     height: 30,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    background:theme.palette.filters.dropdown,
     borderRadius: "6px",
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    boxShadow: theme.palette.filters.dropdownShadow,
     mr: 1,
     p:1,
     '& .MuiSelect-select': {
       padding: '1px 1px',
       fontSize: '0.75rem',
       fontWeight: '500',
-      color: '#333',
+      color: theme.palette.filters.dropdownColor,
     },
   }}
   MenuProps={{
@@ -344,16 +355,16 @@ export default function Savings() {
   sx={{
     width: 110,
     height: 30,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    background:theme.palette.filters.dropdown,
     borderRadius: "6px",
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    boxShadow: theme.palette.filters.dropdownShadow,
     mr: 1,
     p:1,
     '& .MuiSelect-select': {
       padding: '1px 1px',
       fontSize: '0.75rem',
       fontWeight: '500',
-      color: '#333',
+      color: theme.palette.filters.dropdownColor,
     },
   }}
   MenuProps={{
@@ -389,16 +400,16 @@ export default function Savings() {
   sx={{
               width: 110,
               height: 30,
-              background: "linear-gradient(135deg, #fff, #fce4ec)",
+              background: theme.palette.filters.dropdown,
               borderRadius: "6px",
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+              boxShadow: theme.palette.filters.dropdownShadow,
               mr: 1,
               p:1,
               '& .MuiSelect-select': {
                 padding: '1px 1px',
                 fontSize: '0.75rem',
                 fontWeight: '500',
-                color: '#333',
+                color: theme.palette.filters.dropdownColor,
               },
             }}
             MenuProps={{
@@ -436,17 +447,31 @@ export default function Savings() {
   </Box>
 )}
   </Box>
-  <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", borderRadius: "10px", overflow: "hidden",fontSize: "0.75rem",p:1 }}>
-        <TableContainer sx={{ flexGrow: 1, overflow: "auto" ,borderRadius: "10px",}}>
+  <Paper sx={{
+    flexGrow: 1,
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: "10px",
+    overflow: "hidden",
+    fontSize: "0.75rem",
+    p: 1,
+    background: theme.palette.table.paperBackground,
+  }}>
+        <TableContainer sx={{
+    flexGrow: 1,
+    overflow: "auto",
+    borderRadius: "10px",
+    border: `1px solid ${theme.palette.table.borderColor}`,
+  }}>
         <Table stickyHeader size="small"> 
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#1E88E5" }}>
+              <TableRow sx={{ backgroundColor: theme.palette.table.headerRow }}>
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
                     align={column.align}
                     style={{ minWidth: column.minWidth }}
-                    sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
+                    sx={{ backgroundColor: theme.palette.table.tableCell, color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
                   >
                        <Box sx={{ display: "flex", alignItems: "center",}}>
                       {column.label}
@@ -456,6 +481,14 @@ export default function Savings() {
                           options={categoryOptions}
                           selected={categoryFilter}
                           onChange={setCategoryFilter}
+                      />
+                      )}
+
+{column.label === "STATUS" && (
+                      <FilterDropdown
+                          options={statusOptions}
+                          selected={statusFilter}
+                          onChange={setStatusFilter}
                       />
                       )}
 
@@ -475,10 +508,14 @@ export default function Savings() {
             <TableBody>
             {Array.isArray(savings) && savings.length > 0 ? (
               savings.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
-                  <TableRow key={index} hover sx={{backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white",
-                      "&:hover": { backgroundColor: "#e3f2fd" }}}>
+                  <TableRow key={index} hover  sx={{borderColor: theme.palette.table.borderColor, backgroundColor: index % 2 === 0 ? (theme.palette.table.evenRow) : (theme.palette.table.oddRow), "&:hover": { backgroundColor:theme.palette.table.hoverColor}}}>
                     {columns.map((column) => (
-                        <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1.1 }}>
+                        <TableCell key={column.id} sx={{
+                          fontSize: "0.65rem",
+                          py: 1,
+                          borderBottom: `1px solid ${theme.palette.table.borderColor}`,
+                          color: theme.palette.table.textColor,
+                        }}>
                           {column.id === "actions" ? (
                         <>
                           <Tooltip title="Edit">
@@ -487,7 +524,7 @@ export default function Savings() {
                         </>
                       ) : column.id === "account" ? (
                               row.account.name // Extract account name instead of showing the entire object
-                          ) : column.id === "startDate" || column.id === "createdAt" || column.id==="maturityDate" ? (
+                          ) : column.id === "startDate" || column.id==="maturityDate" ? (
                               formatDate(row[column.id]) // ✅ Correctly format the date values
                           ) : (
                               row[column.id]
@@ -530,14 +567,29 @@ export default function Savings() {
       </Paper>
 
       <Dialog open={open} onClose={handleClose} PaperProps={{
-    sx: {
-      width: '500px', // adjust as needed
-      maxWidth: '90%', // responsive limit
-      fontSize: '12px',
-      height:'600px'
-    },
-  }}>
-        <DialogTitle sx={{ fontSize: '16px' }}>{"Edit Saving"}</DialogTitle>
+  sx: (theme) => ({
+    width: '500px',
+    maxWidth: '90%',
+    fontSize: '12px',
+    height: '600px',
+    boxShadow: theme.palette.dialog.boxShadow,
+    background: theme.palette.dialog.backgroundColor,
+    border: theme.palette.mode === 'dark' ? '1px solid #3C3F4A' : '1px solid #ccc',
+    borderRadius: '12px',
+  }),
+}}
+sx={{
+  "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
+  "& .MuiPaper-root": {
+    backdropFilter: "blur(12px)",
+  },
+}}>
+        <DialogTitle sx={(theme) => ({
+          fontWeight: "bold",
+          textAlign: "center",
+    fontSize: '16px',
+    color: theme.palette.dialog.titleColor,
+  })}>{"Edit Saving"}</DialogTitle>
         <DialogContent sx={{ px: 2, py: 1, fontSize: '8px' }}>
   <TextField
     label="Account"
@@ -599,6 +651,17 @@ export default function Savings() {
     sx={inputSx}
   />
 
+<TextField 
+         InputLabelProps={{ sx: labelSx }}
+         sx={inputSx}
+         label="Description" 
+         name="description" 
+         fullWidth 
+         margin="normal" 
+         value={selectedTransaction?.description || ""} 
+         onChange={handleChange} 
+  />
+          
   <TextField
     label="Withdrawn Amount"
     name="withdrawnAmount"

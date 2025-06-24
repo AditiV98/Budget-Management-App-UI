@@ -17,8 +17,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PermanentDrawerLeft from "./PermanentDrawerLeft";
 import Sidebar from "./PermanentDrawerLeft";
-
-const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
+import { useTheme } from "@mui/material/styles";
 
 const accountColors = {
   BANK: "linear-gradient(135deg, #D4E5FF, #A9C5FF)",
@@ -26,17 +25,44 @@ const accountColors = {
   CASH: "linear-gradient(135deg, #C8E6C9, #A5D6A7)",
   WALLET: "linear-gradient(135deg, #FFECB3, #FFD54F)",
 };
+const darkAccountColors = {
+  BANK: "linear-gradient(135deg, #394867, #2A324B)",           // Muted blue-gray gradient
+  'CREDIT CARD': "linear-gradient(135deg, #402C34, #59353C)",  // Deep, dark burgundy gradient
+  CASH: "linear-gradient(135deg, #2B4A47, #3C5C5A)",           // Dark teal gradient
+  WALLET: "linear-gradient(135deg, #343055, #4A4278)",         // Dark muted olive / brown gradient
+};
 
 const accountTypes = ["BANK", "CASH", "WALLET", "CREDIT CARD"];
-const expenseCategories = [
+const expenseCategory = [
   "Housing", "Utilities", "Groceries", "Transportation", "Education",
   "Healthcare", "Loan & Debt Payments", "Dining Out", "Entertainment",
   "Shopping", "Travel", "Gifts & Donations", "Fitness & Wellness",
   "Childcare", "Home Maintenance", "Pet Care", "Self-Development","Tax","Other"
 ];
-const savingsCategories = ["FD", "Mutual Funds", "Stocks", "Gold ETFs","Other"];
+const savingsCategory = ["FD", "Mutual Funds", "Stocks", "Gold ETFs","Other"];
+
+const inputLabelSx = (theme) => ({
+  fontSize: '12px',
+  "&.Mui-focused": { fontSize: '12px' },
+  "&.MuiInputLabel-shrink": { fontSize: '12px' },
+});
+
+
+const textFieldSx = (theme) => ({
+  fontSize: '12px',
+  "& .MuiSelect-select": {
+      fontSize: '12px',   // font size of selected value inside select input
+  },
+  "& .MuiInputBase-input": {
+      fontSize: '12px',   // fallback for normal inputs
+  },
+});
 
 const MyAccount = () => {
+  const theme = useTheme();
+  const pageBackground = theme.palette.background.gradient;
+  const isDark = theme.palette.mode === 'dark';
+
   const dispatch = useDispatch();
   const { accounts, status, error } = useSelector((state) => state.account || []);
     const [openErrorDialog, setOpenErrorDialog] = useState(false);
@@ -72,6 +98,11 @@ const MyAccount = () => {
     const handleSave = () => {
         dispatch(updateAccount({ id: editedAccount.id, data: editedAccount }));
         setOpenEditDialog(false);
+    };
+
+    const handleClose = () => {
+      document.activeElement.blur();
+      setOpen(false);
     };
 
   return (
@@ -163,12 +194,21 @@ const MyAccount = () => {
   open={open}
   onClose={() => setOpen(false)}
   fullWidth
+  PaperProps={{
+    sx: (theme) => ({
+      width: '500px',
+      maxWidth: '90%',
+      fontSize: '12px',
+      height: '600px',
+      boxShadow: theme.palette.dialog.boxShadow,
+      background: theme.palette.dialog.backgroundColor,
+      border: theme.palette.mode === 'dark' ? '1px solid #3C3F4A' : '1px solid #ccc',
+      borderRadius: '12px',
+    }),
+  }}
   sx={{
     "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
     "& .MuiPaper-root": {
-      borderRadius: "16px",
-      boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
-      backgroundColor: "rgba(255, 255, 255, 0.9)",
       backdropFilter: "blur(12px)",
     },
   }}
@@ -176,9 +216,9 @@ const MyAccount = () => {
   <DialogTitle
     sx={{
       fontWeight: "bold",
-      fontSize: "1.3rem",
+      fontSize: "16px",
       textAlign: "center",
-      color: "#333",
+      color: theme.palette.dialog.titleColor,
     }}
   >
     Add New Account
@@ -197,15 +237,18 @@ const MyAccount = () => {
             fullWidth
             value={newAccount.name}
             onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })}
+            InputLabelProps={{ sx: inputLabelSx }}
+            sx={textFieldSx}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
-            <InputLabel>Type</InputLabel>
+            <InputLabel sx={{ fontSize: '12px'}}>Type</InputLabel>
             <Select
               value={newAccount.type}
               label="Type"
               onChange={(e) => setNewAccount({ ...newAccount, type: e.target.value })}
+              sx={textFieldSx}
             >
               {accountTypes.map((type) => (
                 <MenuItem key={type} value={type}>
@@ -222,6 +265,8 @@ const MyAccount = () => {
             fullWidth
             value={newAccount.balance}
             onChange={(e) => setNewAccount({ ...newAccount, balance: parseFloat(e.target.value) || 0 })}
+            InputLabelProps={{ sx: inputLabelSx }}
+            sx={textFieldSx}
           />
         </Grid>
       </Grid>
@@ -231,9 +276,9 @@ const MyAccount = () => {
       <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
         Expense Categories
       </Typography>
+      
       <Box display="flex" flexDirection="column" gap={2}>
   <FormControl fullWidth>
-  
     <Select
       multiple
       value={newAccount.expenseCategories}
@@ -241,8 +286,9 @@ const MyAccount = () => {
         setNewAccount({ ...newAccount, expenseCategories: e.target.value })
       }
       renderValue={(selected) => selected.join(", ")}
+      sx={textFieldSx}
     >
-      {expenseCategories.map((cat) => (
+      {expenseCategory.map((cat) => (
         <MenuItem key={cat} value={cat}>
           {cat}
         </MenuItem>
@@ -251,6 +297,8 @@ const MyAccount = () => {
   </FormControl>
 
   <TextField
+  InputLabelProps={{ sx: inputLabelSx }}
+  sx={textFieldSx}
     label="Add Custom Expense Category"
     fullWidth
     variant="outlined"
@@ -284,8 +332,9 @@ const MyAccount = () => {
       setNewAccount({ ...newAccount, savingCategories: e.target.value })
     }
     renderValue={(selected) => selected.join(", ")}
+    sx={textFieldSx}
   >
-    {savingsCategories.map((cat) => (
+    {savingsCategory.map((cat) => (
       <MenuItem key={cat} value={cat}>
         {cat}
       </MenuItem>
@@ -294,6 +343,8 @@ const MyAccount = () => {
 </FormControl>
 
 <TextField
+InputLabelProps={{ sx: inputLabelSx }}
+sx={textFieldSx}
   label="Add Custom Saving Category"
   fullWidth
   variant="outlined"
@@ -314,18 +365,201 @@ const MyAccount = () => {
 />
 
       </Box>
-
-      <Button
-        fullWidth
-        variant="contained"
-        color="primary"
-        sx={{ mt: 4, py: 1.2, fontWeight: "bold" }}
-        onClick={handleAddAccount}
-      >
-        Save Account
-      </Button>
     </Box>
   </DialogContent>
+  <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleAddAccount} variant="contained" color="primary"> Submit</Button>
+        </DialogActions>
+</Dialog>
+
+ {/* Edit Account Dialog */}
+ <Dialog
+  open={openEditDialog}
+  onClose={() => setOpenEditDialog(false)}
+  fullWidth
+  PaperProps={{
+    sx: (theme) => ({
+      width: '500px',
+      maxWidth: '90%',
+      fontSize: '12px',
+      height: '600px',
+      boxShadow: theme.palette.dialog.boxShadow,
+      background: theme.palette.dialog.backgroundColor,
+      border: theme.palette.mode === 'dark' ? '1px solid #3C3F4A' : '1px solid #ccc',
+      borderRadius: '12px',
+    }),
+  }}
+  sx={{
+    "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
+    "& .MuiPaper-root": {
+      backdropFilter: "blur(12px)",
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontWeight: "bold",
+      fontSize: "1.3rem",
+      textAlign: "center",
+      color: theme.palette.dialog.titleColor,
+    }}
+  >
+    Edit Account
+  </DialogTitle>
+
+  <DialogContent>
+    {editedAccount && (
+      <Box component="form" noValidate autoComplete="off" sx={{ px: 1 }}>
+        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, color: "text.primary", fontWeight: 500 }}>
+          Account Details
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+            InputLabelProps={{ sx: inputLabelSx }}
+            sx={textFieldSx}
+              label="Account Name"
+              fullWidth
+              value={editedAccount.name}
+              onChange={(e) => setEditedAccount({ ...editedAccount, name: e.target.value })}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel sx={{ fontSize: '12px'}}>Type</InputLabel>
+              <Select
+                value={editedAccount.type}
+                label="Type"
+                onChange={(e) => setEditedAccount({ ...editedAccount, type: e.target.value })}
+                sx={textFieldSx}
+              >
+                {accountTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+            InputLabelProps={{ sx: inputLabelSx }}
+            sx={textFieldSx}
+              label="Balance"
+              type="number"
+              fullWidth
+              value={editedAccount.balance}
+              onChange={(e) =>
+                setEditedAccount({ ...editedAccount, balance: parseFloat(e.target.value) || 0 })
+              }
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
+          Expense Categories
+        </Typography>
+        
+        <Box display="flex" flexDirection="column" gap={2}>
+  <FormControl fullWidth>
+    <Select
+      multiple
+      value={editedAccount.expenseCategories}
+      onChange={(e) =>
+        setEditedAccount({ ...editedAccount, expenseCategories: e.target.value })
+      }
+      renderValue={(selected) => selected.join(", ")}
+      sx={textFieldSx}
+    >
+      {(expenseCategory|| []).map((cat) => (
+        <MenuItem key={cat} value={cat}>
+          {cat}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  <TextField
+  InputLabelProps={{ sx: inputLabelSx }}
+  sx={textFieldSx}
+    label="Add Custom Expense Category"
+    fullWidth
+    variant="outlined"
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && e.target.value.trim() !== "") {
+        const customCat = e.target.value.trim();
+        if (!editedAccount.expenseCategories.includes(customCat)) {
+          setEditedAccount((prev) => ({
+            ...prev,
+            expenseCategories: [...prev.expenseCategories, customCat],
+          }));
+        }
+        e.target.value = "";
+        e.preventDefault();
+      }
+    }}
+    placeholder="Press Enter to add"
+  />
+</Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
+          Saving Categories
+        </Typography>
+        <Box display="flex" flexDirection="column" gap={2}>
+  <FormControl fullWidth>
+    <Select
+      multiple
+      value={editedAccount.savingCategories}
+      onChange={(e) =>
+        setEditedAccount({ ...editedAccount, savingCategories: e.target.value })
+      }
+      renderValue={(selected) => selected.join(", ")}
+      sx={textFieldSx}
+    >
+      {(savingsCategory || []).map((cat) => (
+        <MenuItem key={cat} value={cat}>
+          {cat}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  <TextField
+  InputLabelProps={{ sx: inputLabelSx }}
+  sx={textFieldSx}
+    label="Add Custom Saving Category"
+    fullWidth
+    variant="outlined"
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && e.target.value.trim() !== "") {
+        const customCat = e.target.value.trim();
+        if (!editedAccount.savingCategories.includes(customCat)) {
+          setEditedAccount((prev) => ({
+            ...prev,
+            savingCategories: [...prev.savingCategories, customCat],
+          }));
+        }
+        e.target.value = "";
+        e.preventDefault();
+      }
+    }}
+    placeholder="Press Enter to add"
+  />
+</Box>
+      </Box>
+    )}
+  </DialogContent>
+
+  <DialogActions>
+          <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
+          <Button onClick={handleSave} variant="contained" color="primary"> Update</Button>
+        </DialogActions>
 </Dialog>
 
       {status === "loading" ? (
@@ -338,11 +572,14 @@ const MyAccount = () => {
               <Grid item xs={12} sm={6} md={4} key={acc.id}>
                 <Card
                   sx={{
-                    background: accountColors[acc.type] || "#F3E5F5",
-                    color: "#333",
+                    background: isDark ? darkAccountColors[acc.type] || "#2A2D3E" 
+                    : accountColors[acc.type] || "#F3E5F5",
+                    color: isDark ? "#f5f5f5" : "#333",
                     textAlign: "center",
                     borderRadius: "16px",
-                    boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
+                    boxShadow: isDark
+                    ? "0 4px 20px rgba(0, 0, 0, 0.8), 0 0 10px rgba(58, 63, 92, 0.7)"  // stronger & colored shadow in dark mode
+                    : "0 8px 30px rgba(0, 0, 0, 0.1)", 
                     transition: "transform 0.3s",
                     "&:hover": { transform: "scale(1.05)" },
                     position: "relative",
@@ -452,189 +689,6 @@ const MyAccount = () => {
               No accounts found.
             </Typography>
           )}
-       
-          {/* Edit Account Dialog */}
-          <Dialog
-  open={openEditDialog}
-  onClose={() => setOpenEditDialog(false)}
-  fullWidth
-  sx={{
-    "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
-    "& .MuiPaper-root": {
-      borderRadius: "16px",
-      boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
-      backgroundColor: "rgba(255, 255, 255, 0.9)",
-      backdropFilter: "blur(12px)",
-    },
-  }}
->
-  <DialogTitle
-    sx={{
-      fontWeight: "bold",
-      fontSize: "1.3rem",
-      textAlign: "center",
-      color: "#333",
-    }}
-  >
-    Edit Account
-  </DialogTitle>
-
-  <DialogContent>
-    {editedAccount && (
-      <Box component="form" noValidate autoComplete="off" sx={{ px: 1 }}>
-        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, color: "text.primary", fontWeight: 500 }}>
-          Account Details
-        </Typography>
-
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Account Name"
-              fullWidth
-              value={editedAccount.name}
-              onChange={(e) => setEditedAccount({ ...editedAccount, name: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={editedAccount.type}
-                label="Type"
-                onChange={(e) => setEditedAccount({ ...editedAccount, type: e.target.value })}
-              >
-                {accountTypes.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="Balance"
-              type="number"
-              fullWidth
-              value={editedAccount.balance}
-              onChange={(e) =>
-                setEditedAccount({ ...editedAccount, balance: parseFloat(e.target.value) || 0 })
-              }
-            />
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
-          Expense Categories
-        </Typography>
-        <Box display="flex" flexDirection="column" gap={2}>
-  <FormControl fullWidth>
-    <Select
-      multiple
-      value={editedAccount.expenseCategories}
-      onChange={(e) =>
-        setEditedAccount({ ...editedAccount, expenseCategories: e.target.value })
-      }
-      renderValue={(selected) => selected.join(", ")}
-    >
-      {(editedAccount.expenseCategories || []).map((cat) => (
-        <MenuItem key={cat} value={cat}>
-          {cat}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-
-  <TextField
-    label="Add Custom Expense Category"
-    fullWidth
-    variant="outlined"
-    onKeyDown={(e) => {
-      if (e.key === "Enter" && e.target.value.trim() !== "") {
-        const customCat = e.target.value.trim();
-        if (!editedAccount.expenseCategories.includes(customCat)) {
-          setEditedAccount((prev) => ({
-            ...prev,
-            expenseCategories: [...prev.expenseCategories, customCat],
-          }));
-        }
-        e.target.value = "";
-        e.preventDefault();
-      }
-    }}
-    placeholder="Press Enter to add"
-  />
-</Box>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Typography variant="subtitle1" sx={{ mb: 1, color: "text.primary", fontWeight: 500 }}>
-          Saving Categories
-        </Typography>
-        <Box display="flex" flexDirection="column" gap={2}>
-  <FormControl fullWidth>
-    <Select
-      multiple
-      value={editedAccount.savingCategories}
-      onChange={(e) =>
-        setEditedAccount({ ...editedAccount, savingCategories: e.target.value })
-      }
-      renderValue={(selected) => selected.join(", ")}
-    >
-      {(editedAccount.savingCategories || []).map((cat) => (
-        <MenuItem key={cat} value={cat}>
-          {cat}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-
-  <TextField
-    label="Add Custom Saving Category"
-    fullWidth
-    variant="outlined"
-    onKeyDown={(e) => {
-      if (e.key === "Enter" && e.target.value.trim() !== "") {
-        const customCat = e.target.value.trim();
-        if (!editedAccount.savingCategories.includes(customCat)) {
-          setEditedAccount((prev) => ({
-            ...prev,
-            savingCategories: [...prev.savingCategories, customCat],
-          }));
-        }
-        e.target.value = "";
-        e.preventDefault();
-      }
-    }}
-    placeholder="Press Enter to add"
-  />
-</Box>
-      </Box>
-    )}
-  </DialogContent>
-
-  <DialogActions sx={{ px: 3, pb: 2 }}>
-    <Button
-      onClick={() => setOpenEditDialog(false)}
-      variant="outlined"
-      color="secondary"
-      sx={{ borderRadius: 2 }}
-    >
-      Cancel
-    </Button>
-    <Button
-      onClick={handleSave}
-      variant="contained"
-      color="primary"
-      sx={{ borderRadius: 2, fontWeight: "bold" }}
-    >
-      Save Changes
-    </Button>
-  </DialogActions>
-</Dialog>
-
         </Grid>
         </Box>
         )}

@@ -22,13 +22,12 @@ import SouthWestIcon from '@mui/icons-material/SouthWest';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import PaymentIcon from '@mui/icons-material/Payment';
+import { useTheme } from "@mui/material/styles";
+import DateAndAccountFilter from "./DateAndAccountFilter";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
-
-
-const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
-
 
 const compactSelectSx = {
   width: 120,
@@ -45,8 +44,10 @@ const compactSelectSx = {
   },
 };
 
-
 export default function Dashboard() {
+  const theme = useTheme();
+  const pageBackground = theme.palette.background.gradient;
+  const isDark = theme.palette.mode === 'dark';
   const dispatch = useDispatch();
   const { dashboard, status, error } = useSelector((state) => state.dashboard || { dashboard: {} });
   const accounts = useSelector((state) => state.account?.accounts) || [];
@@ -119,43 +120,63 @@ useEffect(() => {
     totalIncome = 0,
     totalExpense = 0,
     totalSavings = 0,
+    totalInterest=0,
     remainingBalance = 0,
     expenseBreakdown = [],
     savingsBreakdown = [],
-    incomeBreakdown = []
+    incomeBreakdown = [],
+    interestBreakdown=[],
   } = dashboard || {};
 
   const cardData = [
     { 
       title: "Total Income", 
       value: totalIncome,
-      icon: <AttachMoneyIcon fontSize="large" sx={{ color: "#0D47A1" }} />, 
-      gradient: "linear-gradient(135deg, #D4E5FF, #A9C5FF)" 
+      icon: <AttachMoneyIcon fontSize="large" sx={{ color: isDark ? "#1976D2" : "#0D47A1" }}  />, 
+      gradient: isDark 
+      ? "linear-gradient(135deg, #1b2a3a, #243849)" 
+      : "linear-gradient(135deg, #D4E5FF, #A9C5FF)" 
     },
     { 
       title: "Total Expense", 
       value: totalExpense, 
-      icon: <MoneyOffIcon fontSize="large" sx={{ color: "#D50000" }} />, 
-      gradient: "linear-gradient(135deg, #FFC1C1, #FF8A80)" 
+      icon: <MoneyOffIcon fontSize="large" sx={{ color: isDark ? "#C62828" : "#D50000" }} />, 
+      gradient:isDark 
+      ? "linear-gradient(135deg, #3a1b1b, #522121)" 
+      : "linear-gradient(135deg, #FFC1C1, #FF8A80)" 
     },
     { 
       title: "Total Savings", 
       value: totalSavings, 
-      icon: <SavingsIcon fontSize="large" sx={{ color: "#2E7D32" }} />, 
-      gradient: "linear-gradient(135deg, #C8E6C9, #A5D6A7)" 
+      icon: <SavingsIcon fontSize="large" sx={{ color: isDark ? "#1B5E20" : "#2E7D32" }} />, 
+      gradient: isDark 
+      ? "linear-gradient(135deg, #1b3a2b, #2e4d3b)" 
+      : "linear-gradient(135deg, #C8E6C9, #A5D6A7)"  
+    },
+    { 
+      title: "Total Interest", 
+      value: totalInterest, 
+      icon: <PaymentIcon fontSize="large" sx={{ color: isDark ? "#00897B" : "#00695C" }}  />, 
+      gradient:isDark 
+      ? "linear-gradient(135deg, #254742, #2f5e57)" 
+      : "linear-gradient(135deg, #B2DFDB, #80CBC4)" 
     },
     { 
       title: "Remaining Balance", 
       value: remainingBalance, 
-      icon: <AccountBalanceIcon fontSize="large" sx={{ color: "#FF8F00" }} />, 
-      gradient: "linear-gradient(135deg, #FFECB3, #FFD54F)" 
+      icon: <AccountBalanceIcon fontSize="large" sx={{ color: isDark ? "#F57C00" : "#FF8F00" }}  />, 
+      gradient: isDark 
+      ? "linear-gradient(135deg, #3a2f1b, #524227)" 
+      : "linear-gradient(135deg, #FFECB3, #FFD54F)"  
     },    
   ];
+  
   const minDisplayValue = 0; // Ensure at least some value
   const pieCharts = [
     { title: "Income Breakdown", data: incomeBreakdown },
      { title: "Expense Breakdown", data: expenseBreakdown },
     { title: "Savings Breakdown", data: savingsBreakdown },
+    { title: "Interest Breakdown", data: interestBreakdown },
   {title: "Expense vs Savings",
         data: [
     { name: "Expenses", value: Math.max(totalExpense, minDisplayValue), color: "#F770E5" },
@@ -251,206 +272,38 @@ useEffect(() => {
                 pt: 8, // adjust based on AppBar height
               }}
           >
-     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexWrap: 'wrap', position: 'relative' }}>
-        {/* Account Filter */}
-          <Select
-            value={selectedAccount}
-            onChange={handleAccountChange}
-            displayEmpty
-            sx={{
-              width: 110,
-              height: 30,
-              background: "linear-gradient(135deg, #fff, #fce4ec)",
-              borderRadius: "6px",
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
-              mr: 1,
-              p:1,
-              '& .MuiSelect-select': {
-                padding: '1px 1px',
-                fontSize: '0.75rem',
-                fontWeight: '500',
-                color: '#333',
-              },
-            }}
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  maxHeight: 150, // limit height of dropdown
-                  width: 120,     // narrow the dropdown width
-                  fontSize: '0.75rem',
-                  '& .MuiMenuItem-root': {
-                    minHeight: '30px',
-                    fontSize: '0.75rem',
-                    px: 1,
-                  },
-                },
-              },
-            }}
-          >
-            <MenuItem value="" disabled>Select Account</MenuItem>
-            {accounts.map((acc) => (
-              <MenuItem key={acc.id} value={acc.id}>{acc.name}</MenuItem>
-            ))}
-          </Select>
 
-        
-{/* Month Dropdown */}
-<Select
-  value={selectedMonthNum}
-  onChange={(e) => setSelectedMonthNum(parseInt(e.target.value))}
-  sx={{
-    width: 110,
-              height: 30,
-              background: "linear-gradient(135deg, #fff, #fce4ec)",
-              borderRadius: "6px",
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
-              mr: 1,
-              p:1,
-              '& .MuiSelect-select': {
-                padding: '1px 1px',
-                fontSize: '0.75rem',
-                fontWeight: '500',
-                color: '#333',
-              },
-  }}
-  MenuProps={{
-    PaperProps: {
-      sx: {
-        maxHeight: 150, 
-        width: 120,     
-        fontSize: '0.75rem',
-        '& .MuiMenuItem-root': {
-          minHeight: '30px',
-          fontSize: '0.75rem',
-          px: 1,
-        },
-      },
-    },
-  }}
->
-  {Array.from({ length: 12 }, (_, i) => (
-    <MenuItem key={i} value={i}>
-      {dayjs().month(i).format("MMMM")}
-    </MenuItem>
-  ))}
-</Select>
-
-{/* Year Dropdown */}
-<Select
-  value={selectedYear}
-  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-  sx={{
-    width: 110,
-    height: 30,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
-    borderRadius: "6px",
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
-    mr: 1,
-    p:1,
-    '& .MuiSelect-select': {
-      padding: '1px 1px',
-      fontSize: '0.75rem',
-      fontWeight: '500',
-      color: '#333',
-    },
-  }}
-  MenuProps={{
-    PaperProps: {
-      sx: {
-        maxHeight: 150, // limit height of dropdown
-        width: 120,     // narrow the dropdown width
-        fontSize: '0.75rem',
-        '& .MuiMenuItem-root': {
-          minHeight: '30px',
-          fontSize: '0.75rem',
-          px: 1,
-        },
-      },
-    },
-  }}
->
-  {Array.from({ length: 5 }, (_, i) => {
-    const year = dayjs().year() - i;
-    return <MenuItem key={year} value={year}>{year}</MenuItem>;
-  })}
-</Select>
-
-{/* Custom Date Option */}
-<Select
- value={isCustomMode ? "custom" : ""}
- onChange={(e) => {
-   const isCustom = e.target.value === "custom";
-   setIsCustomMode(isCustom);
-   setShowCustomFilter(isCustom);
- }}
-  displayEmpty
-  sx={{
-    width: 110,
-    height: 30,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
-    borderRadius: "6px",
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
-    mr: 1,
-    p:1,
-    '& .MuiSelect-select': {
-      padding: '1px 1px',
-      fontSize: '0.75rem',
-      fontWeight: '500',
-      color: '#333',
-    },
-  }}
-  MenuProps={{
-    PaperProps: {
-      sx: {
-        maxHeight: 150, // limit height of dropdown
-        width: 120,     // narrow the dropdown width
-        fontSize: '0.75rem',
-        '& .MuiMenuItem-root': {
-          minHeight: '30px',
-          fontSize: '0.75rem',
-          px: 1,
-        },
-      },
-    },
-  }}
->
-  <MenuItem value="">Default</MenuItem>
-  <MenuItem value="custom">Custom Date</MenuItem>
-</Select>
-
-{/* Render Custom Date Picker */}
-{showCustomFilter && (
-  <Box sx={{ position: "absolute", top: "110%", right: 0, zIndex: 10 }}>
-    <CustomDateFilter
-      onApply={(dates) => {
-        updateMonth(dates);
-        setShowCustomFilter(false);
-        setIsCustomMode(true); // Stay in custom mode
-      }}
-      onCancel={() => {
-        setShowCustomFilter(false);
-        setIsCustomMode(false);
-      }}
-    />
-  </Box>
-)}
-      </Box>
+            <DateAndAccountFilter
+            accounts={accounts}
+            selectedAccount={selectedAccount}
+            handleAccountChange={handleAccountChange}
+            selectedMonthNum={selectedMonthNum}
+            setSelectedMonthNum={setSelectedMonthNum}
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+            isCustomMode={isCustomMode}
+            setIsCustomMode={setIsCustomMode}
+            showCustomFilter={showCustomFilter}
+            setShowCustomFilter={setShowCustomFilter}
+            updateMonth={updateMonth}
+            theme={theme}
+          />
 
     <Grid container spacing={2}>
   {/* Main Left Content */}
-  <Grid item xs={12} md={9}>
+  <Grid item xs={12} md={10}>
     {/* Cards - 4 in a row */}
     <Grid container spacing={2}>
   {cardData.map(({ title, value, icon, gradient }, index) => (
-    <Grid item sm={6} md={3} key={index}>
+   <Grid item xs={6} sm={6} md={2.4} key={index}>
       <Card
         sx={{
           background: gradient,
-          color: "#333",
+          color: theme.palette.filters.dropdownColor,
           height: 100,
           textAlign: "center",
           borderRadius: "12px",
-          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
+          boxShadow: theme.palette.background.boxShadow, 
           transition: "transform 0.3s",
           "&:hover": { transform: "scale(1.05)" },
           display: "flex",
@@ -478,15 +331,15 @@ useEffect(() => {
 
     <Grid container spacing={2} sx={{ mt: 1 }}>
   {pieCharts.map((chart, index) => (
-    <Grid item sm={6} md={3} key={index}>
+    <Grid item xs={12} sm={6} md={2.4} key={index}>
       <Card
          sx={{
-          background: "rgba(255, 255, 255, 0.8)",
+          background: isDark ? 'linear-gradient(180deg, #1E1A2F, #2C2540)' : "rgba(255, 255, 255, 0.8)",
           borderRadius: "16px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+          boxShadow: theme.palette.background.boxShadow, 
           textAlign: "center",
-          p: 1.5,
-          height: "100%",
+          p: 1,
+          height: "95%",
         }}
       >
         <CardContent
@@ -529,13 +382,14 @@ useEffect(() => {
       const data = payload[0];
       return (
         <div
-          style={{
-            background: "#fff",
-            border: "1px solid #ccc",
-            padding: "8px",
-            fontSize: "0.75rem",
-            borderRadius: "6px",
-          }}
+        style={{
+          background: isDark ? "#333" : "#fff",
+          border: `1px solid ${isDark ? "#555" : "#ccc"}`,
+          color: isDark ? "#eee" : "#333",
+          padding: "8px",
+          fontSize: "0.75rem",
+          borderRadius: "6px",
+        }}
         >
           <div><strong>{data.payload.name}</strong>: ₹{data.payload.value.toLocaleString()}</div>
         </div>
@@ -561,13 +415,15 @@ useEffect(() => {
 </Grid>
 
 
-    <Grid item xs={12} md={12} sx={{ mt: 3 }}>
+    <Grid item xs={12} md={12} sx={{ mt: 1 }}>
   <Card
     sx={{
       p: 2,
       borderRadius: "16px",
-      background: "linear-gradient(145deg, #fdfbff, #f3f1f9)",
-      boxShadow: "0 8px 20px rgba(0, 0, 0, 0.08)",
+     background: isDark
+  ? "linear-gradient(180deg, #1E1A2F, #382E56);"
+  : "linear-gradient(145deg, #fdfbff, #f3f1f9)",
+  boxShadow: theme.palette.background.boxShadow, 
       backdropFilter: "blur(10px)",
       transition: "none",
     }}
@@ -588,28 +444,30 @@ useEffect(() => {
         <XAxis
           dataKey="date"
           stroke="#8884d8"
-          tick={{ fontSize: 10, fill: "#555" }}
+          tick={{ fontSize: 10, fill: isDark ? "#bbb" : "#555" }}
         />
         <YAxis
           stroke="#8884d8"
           domain={['auto', 'auto']}
-          tick={{ fontSize: 10, fill: "#555" }}
+          tick={{ fontSize: 10, fill: isDark ? "#bbb" : "#555" }}
           tickFormatter={(value) => `₹${value.toLocaleString()}`}
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: "white",
+            backgroundColor: isDark ? "#222" : "white",
             borderRadius: "12px",
-            border: "1px solid #ccc",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            color: "#333",
-          }}
+            border: `1px solid ${isDark ? "#444" : "#ccc"}`,
+            boxShadow: isDark
+              ? "0 2px 10px rgba(255,255,255,0.1)"
+              : "0 2px 10px rgba(0,0,0,0.1)",
+            color: isDark ? "#eee" : "#333",
+          }}          
           formatter={(value) => `₹${value.toLocaleString()}`}
         />
         <Legend
           verticalAlign="top"
           height={36}
-          wrapperStyle={{ color: "#4B4B7C", fontSize: "0.75rem" }}
+          wrapperStyle={{ color: isDark ? "#bbb" : "#4B4B7C", fontSize: "0.75rem" }}
         />
 
         {/* Expense Line */}
@@ -664,14 +522,16 @@ useEffect(() => {
   </Grid>
 
   {/* Right Sidebar Content */}
-  <Grid item xs={12} md={3}>
+  <Grid item xs={12} md={2}>
   {/* Recurring Transactions */}
   <Card
   sx={{
-    background: "linear-gradient(135deg, #c1f1fc, #e0c3fc)",
+    background: isDark
+  ? "linear-gradient(135deg, #171322, #2A2340, #3C325A)"  // darker gradient for dark mode
+  : "linear-gradient(135deg, #c1f1fc, #e0c3fc)",
     borderRadius: "12px",
     mb: 2,
-    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.1)",
+    boxShadow: theme.palette.background.boxShadow, 
     textAlign: 'center',
   }}
 >
@@ -692,11 +552,13 @@ useEffect(() => {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              background: "#fff",
+              background: isDark ? "#333" : "#fff",
               borderRadius: "8px",
               p: 1,
               mb: 1,
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
+              boxShadow: isDark
+  ? "0 2px 6px rgba(255, 255, 255, 0.1)"
+  : "0 2px 6px rgba(0, 0, 0, 0.05)",
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -740,10 +602,12 @@ useEffect(() => {
   {/* Recent Transactions */}
   <Card
   sx={{
-    background: "linear-gradient(135deg, #c1f1fc, #e0c3fc)",
+    background: isDark
+  ? "linear-gradient(135deg, #171322, #2A2340, #3C325A)"  // darker gradient for dark mode
+  : "linear-gradient(135deg, #c1f1fc, #e0c3fc)",
     borderRadius: "12px",
     mb: 2,
-    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.1)",
+    boxShadow: theme.palette.background.boxShadow, 
     textAlign: 'center',
   }}
 >
@@ -764,11 +628,13 @@ useEffect(() => {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              background: "#fff",
+              background: isDark ? "#333" : "#fff",
               borderRadius: "8px",
               p: 1,
               mb: 1,
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
+              boxShadow: isDark
+  ? "0 2px 6px rgba(255, 255, 255, 0.1)"
+  : "0 2px 6px rgba(0, 0, 0, 0.05)",
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>

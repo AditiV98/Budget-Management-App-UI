@@ -14,7 +14,8 @@ import {
   ListItemIcon,
   ListItemText,
   AppBar,
-  Toolbar
+  Toolbar,
+  useTheme
 } from '@mui/material';
 import {
   Home,
@@ -38,6 +39,8 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(true);
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   const toggleDrawer = () => setOpen(!open);
 
@@ -51,6 +54,10 @@ export default function Sidebar() {
     { name: "Settings", icon: <Settings />, path: "/settings" },
   ];
 
+  const drawerGradient = theme.palette.sidebar.drawerGradient;
+
+  const drawerHeaderBg = theme.palette.sidebar.drawerHeaderBg;
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -61,7 +68,9 @@ export default function Sidebar() {
         sx={{
           zIndex: 1201,
           height: appBarHeight,
-          background: "linear-gradient(135deg, #AEC6FF, #F8C3E6)",
+          background: isDark
+            ? 'linear-gradient(135deg, #2A263D, #3A3359)'
+            : 'linear-gradient(135deg, #AEC6FF, #F8C3E6)',
           boxShadow: "none",
           width: `calc(100% - ${open ? drawerWidth : collapsedDrawerWidth}px)`,
           ml: `${open ? drawerWidth : collapsedDrawerWidth}px`,
@@ -91,7 +100,7 @@ export default function Sidebar() {
             width: open ? drawerWidth : collapsedDrawerWidth,
             transition: "width 0.3s ease",
             boxSizing: 'border-box',
-            background: "linear-gradient(135deg, #AEC6FF, #F8C3E6)",
+            background: drawerGradient,
             borderRight: "1px solid rgba(255, 255, 255, 0.2)",
             boxShadow: "4px 0px 8px rgba(0, 0, 0, 0.05)",
             color: "#333",
@@ -106,9 +115,8 @@ export default function Sidebar() {
             justifyContent: open ? "space-between" : "center",
             alignItems: "center",
             padding: open ? "8px" : "6px",
-            background: "linear-gradient(135deg, #97A5EE, #95DFF2)",
-            borderBottomLeftRadius: "8px",
-            borderBottomRightRadius: "8px",
+            background: drawerHeaderBg,
+           
           }}
         >
           {open && (
@@ -139,9 +147,14 @@ export default function Sidebar() {
                   <ListItemButton
                     onClick={() => navigate(path)}
                     sx={{
-                      backgroundColor: isActive ? "#5C6BC0" : "transparent",
-                      color: isActive ? "white" : "#333",
-                      "&:hover": { backgroundColor: "#C084D3", color: "white" },
+                      backgroundColor: isActive
+                      ? theme.palette.primary.main
+                      : 'transparent',
+                      color: isActive ? 'white' : theme.palette.sidebar.textColor,
+                      '&:hover': {
+                        backgroundColor: theme.palette.sidebar.hoverBg,
+                        color: 'white',
+                      },
                       borderRadius: "10px",
                       mx: open ? 1.5 : 0.5,
                       py: open ? 1.2 : 0.8,
@@ -151,7 +164,9 @@ export default function Sidebar() {
                   >
                     <ListItemIcon
                       sx={{
-                        color: isActive ? "white" : "#5C6BC0",
+                        color: isActive
+                          ? 'white'
+                          : theme.palette.sidebar.iconColor,
                         minWidth: open ? "32px" : "24px",
                       }}
                     >

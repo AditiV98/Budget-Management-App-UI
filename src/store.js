@@ -5,6 +5,7 @@ import dashboardReducer from './features/dashboard/dashboardSlice'
 import authReducer from './features/auth/authSlice'
 import recurringTransactionReducer from './features/recurringTransactions/recurringTransactionsSlice'
 import savingReducer from './features/saving/savingSlice'
+import configReducer from './features/configs/configsSlice'
 
 export const store = configureStore({
   reducer: {
@@ -14,5 +15,6 @@ export const store = configureStore({
     auth : authReducer,
     recurringTransactions: recurringTransactionReducer,
     savings: savingReducer,
+    configs:configReducer,
   },
 })

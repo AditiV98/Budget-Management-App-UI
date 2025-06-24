@@ -11,6 +11,7 @@ import MyAccount from "./MyAccount";
 import Settings from "./Settings";
 import Home from "./Home";
 import RecurringTransaction from "./Recurringtransactions";
+import { ThemeModeProvider } from "../ThemeContext";
 
 const GOOGLE_CLIENT_ID = "634540330926-tpucuji65r3b5nlkgpq54arggqqcret7.apps.googleusercontent.com";
 const REFRESH_INTERVAL = 4.5 * 60 * 1000; // 4.5 minutes
@@ -18,6 +19,7 @@ const REFRESH_INTERVAL = 4.5 * 60 * 1000; // 4.5 minutes
 function MyApp() {
     const dispatch = useDispatch();
     const refreshTimerRef = useRef(null);
+    
 
     useEffect(() => {
         const refreshToken = localStorage.getItem("refreshToken");
@@ -42,6 +44,7 @@ function MyApp() {
 
     return (
         <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+             <ThemeModeProvider>
             <Router>
                 <Routes>
                     <Route path="/" element={<Home />} />
@@ -54,6 +57,7 @@ function MyApp() {
                     <Route path="/settings" element={<Settings />} />
                 </Routes>
             </Router>
+            </ThemeModeProvider>
         </GoogleOAuthProvider>
     );
 }

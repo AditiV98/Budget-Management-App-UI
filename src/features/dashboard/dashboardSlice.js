@@ -1,7 +1,7 @@
 import {createSlice,createAsyncThunk} from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/dashboard"
+const API_URL = process.env.REACT_APP_API_BASE_URL+"/dashboard"
 
 export const fetchDashboard = createAsyncThunk("dashboard/fetchDashboard", async ({accountId, startDate, endDate }, { rejectWithValue }) => {
     try {

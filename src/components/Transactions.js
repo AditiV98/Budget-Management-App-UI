@@ -22,8 +22,8 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { fetchSavings} from "../features/saving/savingSlice";
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
-
-const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
+import OutboxIcon from '@mui/icons-material/Outbox';
+import { useTheme } from "@mui/material/styles";
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -53,9 +53,8 @@ const columns = [
   { id: "category", label: "CATEGORY", minWidth: 120 },
   { id: "description", label: "DESCRIPTION", minWidth: 180 },
   { id: "transactionDate", label: "TRANSACTION DATE", minWidth: 150 },
-  { id: "createdAt", label: "CREATED AT", minWidth: 150 },
   { id: "withdrawFrom", label: "WITHDRAW FROM", minWidth: 150 },
-  { id: "actions", label: "ACTIONS", minWidth: 100 },
+  { id: "actions", label: "ACTIONS", minWidth: 120 },
 ];
 
 const typeOptions = [
@@ -95,7 +94,27 @@ const categoryOptions = [
   { label: "Refund", value: "Refund" },
 ];
 
+// Define these constants outside your component (or inside if you want)
+const inputLabelSx = (theme) => ({
+  fontSize: '12px',
+  "&.Mui-focused": { fontSize: '12px' },
+  "&.MuiInputLabel-shrink": { fontSize: '12px' },
+});
+
+
+const textFieldSx = (theme) => ({
+  fontSize: '12px',
+  "& .MuiSelect-select": {
+      fontSize: '12px',   // font size of selected value inside select input
+  },
+  "& .MuiInputBase-input": {
+      fontSize: '12px',   // fallback for normal inputs
+  },
+});
+
 export default function Transactions() {
+  const theme = useTheme();
+  const pageBackground = theme.palette.background.gradient;
   const dispatch = useDispatch();
   const { transactions, error } = useSelector((state) => state.transaction);
   const accounts = useSelector((state) => state.account?.accounts) || [];
@@ -122,6 +141,8 @@ export default function Transactions() {
 
   const [openErrorDialog, setOpenErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const [openWithdrawDialog, setOpenWithdrawDialog] = useState(false);
 
   const accountOptions = accounts.map((acc) => ({
     label: acc.name,
@@ -428,6 +449,51 @@ if (isNaN(parsedDate.getTime())) {
     link.click();
     document.body.removeChild(link);
   };
+
+const handleOpenWithdrawDialog = (transaction = null) => {
+    if (transaction) {
+      const account = transaction?.account ? accounts.find((acc) => acc.id === transaction.account.id) : null;
+
+      setSelectedTransaction({
+        ...transaction,
+        accountId: transaction?.account?.id || "",
+        type:"WITHDRAW",
+        amount:transaction?.saving?.currentValue > 0 ? transaction.saving.currentValue : transaction?.saving?.amount || transaction?.amount,
+        withdrawFrom: transaction?.saving?.id,                      // for display in Select
+        withdrawFromTransactionID: transaction?.saving.transactionID,  // for backend submission
+      });
+
+      setSelectedAccount(account || null);
+    }
+
+    setOpenWithdrawDialog(true);
+  };
+
+  const handleCloseWithdrawDialog = () => {
+    document.activeElement.blur();
+    setSelectedTransaction(null);
+    setOpenWithdrawDialog(false);
+  };
+
+   const handleSubmitWithdrawDialog = () => {
+    if (!selectedTransaction) return;
+
+    const transactionDateUTC =selectedTransaction.transactionDate ? new Date(selectedTransaction.transactionDate).toISOString() : null;
+    
+    const transactionData = {
+      account: { id: selectedTransaction.accountId },
+      amount: Number(selectedTransaction.amount),
+      type: selectedTransaction.type,
+      category: selectedTransaction.category,
+      description: selectedTransaction.description,
+      transactionDate: transactionDateUTC,
+      withdrawFrom:selectedTransaction.withdrawFromTransactionID
+    };
+
+      dispatch(createTransaction(transactionData));
+
+    handleCloseWithdrawDialog();
+  };
   
 
   return (
@@ -567,16 +633,16 @@ if (isNaN(parsedDate.getTime())) {
   sx={{
     width: 110,
     height: 30,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    background: theme.palette.filters.dropdown,
     borderRadius: "6px",
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    boxShadow: theme.palette.filters.dropdownShadow,
     mr: 1,
     p:1,
     '& .MuiSelect-select': {
       padding: '1px 1px',
       fontSize: '0.75rem',
       fontWeight: '500',
-      color: '#333',
+      color: theme.palette.filters.dropdownColor,
     },
   }}
   MenuProps={{
@@ -608,16 +674,16 @@ if (isNaN(parsedDate.getTime())) {
   sx={{
     width: 110,
     height: 30,
-    background: "linear-gradient(135deg, #fff, #fce4ec)",
+    background: theme.palette.filters.dropdown,
     borderRadius: "6px",
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+    boxShadow: theme.palette.filters.dropdownShadow,
     mr: 1,
     p:1,
     '& .MuiSelect-select': {
       padding: '1px 1px',
       fontSize: '0.75rem',
       fontWeight: '500',
-      color: '#333',
+      color: theme.palette.filters.dropdownColor,
     },
   }}
   MenuProps={{
@@ -653,16 +719,16 @@ if (isNaN(parsedDate.getTime())) {
   sx={{
               width: 110,
               height: 30,
-              background: "linear-gradient(135deg, #fff, #fce4ec)",
+              background: theme.palette.filters.dropdown,
               borderRadius: "6px",
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+              boxShadow:theme.palette.filters.dropdownShadow,
               mr: 1,
               p:1,
               '& .MuiSelect-select': {
                 padding: '1px 1px',
                 fontSize: '0.75rem',
                 fontWeight: '500',
-                color: '#333',
+                color: theme.palette.filters.dropdownColor,
               },
             }}
             MenuProps={{
@@ -703,17 +769,41 @@ if (isNaN(parsedDate.getTime())) {
       </Box>
 
       {/* Transactions Table */}
-      <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", borderRadius: "10px", overflow: "hidden",fontSize: "0.75rem",p:1 }}>
-        <TableContainer sx={{ flexGrow: 1, overflow: "auto" ,borderRadius: "10px",}}>
+     <Paper
+  sx={{
+    flexGrow: 1,
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: "10px",
+    overflow: "hidden",
+    fontSize: "0.75rem",
+    p: 1,
+    background: theme.palette.table.paperBackground,
+  }}
+>
+      <TableContainer
+  sx={{
+    flexGrow: 1,
+    overflow: "auto",
+    borderRadius: "10px",
+    border: `1px solid ${theme.palette.table.borderColor}`,
+  }}
+>
         <Table stickyHeader size="small"> 
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#1E88E5" }}>
+              <TableRow sx={{ backgroundColor: theme.palette.table.headerRow }}>
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
                     style={{ minWidth: column.minWidth }}
-                    sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
-                  >
+                    sx={{
+                      backgroundColor: theme.palette.table.tableCell,
+                      color: "white",
+                      fontWeight: "bold",
+                      textAlign: "left",
+                      fontSize: "0.7rem",
+                      py: 1,
+                    }} >
                     <Box sx={{ display: "flex", alignItems: "center"}}>
                       {column.label}
 
@@ -741,9 +831,7 @@ if (isNaN(parsedDate.getTime())) {
     onChange={setAccountFilter}
   />
 )}
-
                     </Box>
-
                   </TableCell>
                 ))}
               </TableRow>
@@ -754,10 +842,18 @@ if (isNaN(parsedDate.getTime())) {
                   <TableRow
                   key={row.id} 
                   hover 
-                  sx={{ backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white", "&:hover": { backgroundColor: "#e3f2fd" } }}
+                  sx={{ borderColor: theme.palette.table.borderColor,backgroundColor: index % 2 === 0 ? (theme.palette.table.evenRow) : (theme.palette.table.oddRow), "&:hover": { backgroundColor:theme.palette.table.hoverColor}}}
                 >
                   {columns.map((column) => (
-                    <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1.1 }}>
+                   <TableCell
+  key={column.id}
+  sx={{
+    fontSize: "0.65rem",
+    py: 1,
+    borderBottom: `1px solid ${theme.palette.table.borderColor}`,
+    color: theme.palette.table.textColor,
+  }}
+>
                       {column.id === "actions" ? (
                         <>
                           <Tooltip title="Edit">
@@ -766,10 +862,23 @@ if (isNaN(parsedDate.getTime())) {
                           <Tooltip title="Delete">
                             <IconButton onClick={() => handleDelete(row.id)} sx={{ p: 0.5 }}><DeleteIcon fontSize="small" color="error" /></IconButton>
                           </Tooltip>
+
+                           {/* Withdraw button only for SAVINGS transactions with ACTIVE status */}
+    {row.type === "SAVINGS" && row.saving?.status === "ACTIVE" && (
+  <Tooltip title="Withdraw">
+    <IconButton
+      onClick={() => handleOpenWithdrawDialog(row)}
+      sx={{ p: 0.5 }}
+      color="warning"
+    >
+      <OutboxIcon fontSize="small" />
+    </IconButton>
+  </Tooltip>
+)}
                         </>
                       ) : column.id === "account" ? (
                           row.account.name // Extract account name instead of showing the entire object
-                      ) : column.id === "transactionDate" || column.id === "createdAt" ? (
+                      ) : column.id === "transactionDate" ? (
                           formatDate(row[column.id]) // ✅ Correctly format the date values
                       ) : (
                           row[column.id]
@@ -813,15 +922,31 @@ if (isNaN(parsedDate.getTime())) {
 
       {/* Add/Edit Transaction Modal */}
       <Dialog open={open} onClose={handleClose} PaperProps={{
-    sx: {
-      width: '500px', // adjust as needed
-      maxWidth: '90%', // responsive limit
-      fontSize: '12px',
-      height:'600px'
-    },
-  }}>
-        <DialogTitle sx={{ fontSize: '16px' }}>{isEditMode ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
-        <DialogContent sx={{ px: 2, py: 1, fontSize: '8px' }}>
+  sx: (theme) => ({
+    width: '500px',
+    maxWidth: '90%',
+    fontSize: '12px',
+    height: '600px',
+    boxShadow: theme.palette.dialog.boxShadow,
+    background: theme.palette.dialog.backgroundColor,
+    border: theme.palette.mode === 'dark' ? '1px solid #3C3F4A' : '1px solid #ccc',
+    borderRadius: '12px',
+  }),
+}}
+sx={{
+  "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
+  "& .MuiPaper-root": {
+    backdropFilter: "blur(12px)",
+  },
+}}
+>
+        <DialogTitle sx={(theme) => ({
+          fontWeight: "bold",
+          textAlign: "center",
+    fontSize: '16px',
+    color: theme.palette.dialog.titleColor,
+  })}>{isEditMode ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
+        <DialogContent >
           <TextField
               select
               label="Account"
@@ -830,63 +955,22 @@ if (isNaN(parsedDate.getTime())) {
               margin="normal"
               value={selectedTransaction?.accountId || ""}
               onChange={handleChange}
-              InputLabelProps={{
-                sx: {
-                  fontSize: '12px',
-                  "&.Mui-focused": { fontSize: '12px' },
-                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
-                }
-              }}
-              sx={{
-                fontSize: '12px',
-                "& .MuiSelect-select": {
-                  fontSize: '12px',   // font size of selected value inside select input
-                },
-                "& .MuiInputBase-input": {
-                  fontSize: '12px',   // fallback for normal inputs
-                },
-              }} 
+              InputLabelProps={{ sx: inputLabelSx }}
+              sx={textFieldSx}
           >
             {accounts.map((acc) => (
-                <MenuItem key={acc.id} value={acc.id} sx={{ fontSize: '12px' }}>
+                <MenuItem key={acc.id} value={acc.id} sx={{ fontSize: '12px', color: theme.palette.text.primary }}>
                   {acc.name}
                 </MenuItem>
             ))}
           </TextField>
           <TextField 
-          InputLabelProps={{
-            sx: {
-              fontSize: '12px',
-              "&.Mui-focused": { fontSize: '12px' },
-              "&.MuiInputLabel-shrink": { fontSize: '12px' },
-            }
-          }}
-          sx={{
-            fontSize: '12px',
-            "& .MuiSelect-select": {
-              fontSize: '12px',   // font size of selected value inside select input
-            },
-            "& .MuiInputBase-input": {
-              fontSize: '12px',   // fallback for normal inputs
-            },
-          }} 
-            label="Amount" name="amount" type="number" fullWidth margin="normal" value={selectedTransaction?.amount || ""} onChange={handleChange} />
-          <TextField InputLabelProps={{
-                sx: {
-                  fontSize: '12px',
-                  "&.Mui-focused": { fontSize: '12px' },
-                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
-                }
-              }}
-              sx={{
-                fontSize: '12px',
-                "& .MuiSelect-select": {
-                  fontSize: '12px',   // font size of selected value inside select input
-                },
-                "& .MuiInputBase-input": {
-                  fontSize: '12px',   // fallback for normal inputs
-                },
-              }} 
+          InputLabelProps={{ sx: inputLabelSx }}
+          sx={textFieldSx}
+          label="Amount" name="amount" type="number" fullWidth margin="normal" value={selectedTransaction?.amount || ""} onChange={handleChange} />
+          <TextField 
+          InputLabelProps={{ sx: inputLabelSx }}
+          sx={textFieldSx}
            select label="Type" name="type" fullWidth margin="normal" value={selectedTransaction?.type || ""} onChange={handleChange}>
             <MenuItem value="INCOME" sx={{ fontSize: '12px' }}>INCOME</MenuItem>
             <MenuItem value="SAVINGS" sx={{ fontSize: '12px' }}>SAVINGS</MenuItem>
@@ -902,22 +986,8 @@ if (isNaN(parsedDate.getTime())) {
               margin="normal"
               value={selectedTransaction?.category || ""}
               onChange={handleChange}
-              InputLabelProps={{
-                sx: {
-                  fontSize: '12px',
-                  "&.Mui-focused": { fontSize: '12px' },
-                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
-                }
-              }}
-              sx={{
-                fontSize: '12px',
-                "& .MuiSelect-select": {
-                  fontSize: '12px',   // font size of selected value inside select input
-                },
-                "& .MuiInputBase-input": {
-                  fontSize: '12px',   // fallback for normal inputs
-                },
-              }} 
+              InputLabelProps={{ sx: inputLabelSx }}
+              sx={textFieldSx}
           >
             {filteredCategories.length > 0 ? (
                 filteredCategories.map((category) => (
@@ -1005,22 +1075,8 @@ if (isNaN(parsedDate.getTime())) {
           </TextField>
           )}
           <TextField 
-          InputLabelProps={{
-            sx: {
-              fontSize: '12px',
-              "&.Mui-focused": { fontSize: '12px' },
-              "&.MuiInputLabel-shrink": { fontSize: '12px' },
-            }
-          }}
-          sx={{
-            fontSize: '12px',
-            "& .MuiSelect-select": {
-              fontSize: '12px',   // font size of selected value inside select input
-            },
-            "& .MuiInputBase-input": {
-              fontSize: '12px',   // fallback for normal inputs
-            },
-          }} 
+          InputLabelProps={{ sx: inputLabelSx }}
+          sx={textFieldSx}
            label="Description" name="description" fullWidth margin="normal" value={selectedTransaction?.description || ""} onChange={handleChange} />
           <TextField
               label="Transaction Date"
@@ -1030,23 +1086,8 @@ if (isNaN(parsedDate.getTime())) {
               margin="normal"
               value={selectedTransaction?.transactionDate || ""}
               onChange={handleChange}
-              InputLabelProps={{
-                shrink: true,
-                sx: {
-                  fontSize: '12px',
-                  "&.Mui-focused": { fontSize: '12px' },
-                  "&.MuiInputLabel-shrink": { fontSize: '12px' },
-                }
-              }}
-              sx={{
-                fontSize: '12px',
-                "& .MuiSelect-select": {
-                  fontSize: '12px',   // font size of selected value inside select input
-                },
-                "& .MuiInputBase-input": {
-                  fontSize: '12px',   // fallback for normal inputs
-                },
-              }} 
+              InputLabelProps={{ shrink: true,sx: inputLabelSx }}
+              sx={textFieldSx}
           />
         </DialogContent>
         <DialogActions>
@@ -1055,8 +1096,27 @@ if (isNaN(parsedDate.getTime())) {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openCSVDialog} onClose={handleCloseCSVDialog}>
-        <DialogTitle>Upload Transactions via CSV</DialogTitle>
+      <Dialog open={openCSVDialog} onClose={handleCloseCSVDialog} PaperProps={{
+  sx: (theme) => ({
+    fontSize: '12px',
+    boxShadow: theme.palette.dialog.boxShadow,
+    background: theme.palette.dialog.backgroundColor,
+    border: theme.palette.mode === 'dark' ? '1px solid #3C3F4A' : '1px solid #ccc',
+    borderRadius: '12px',
+  }),
+}}
+sx={{
+  "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
+  "& .MuiPaper-root": {
+    backdropFilter: "blur(12px)",
+  },
+}}>
+        <DialogTitle sx={(theme) => ({
+          fontWeight: "bold",
+          textAlign: "center",
+    fontSize: '16px',
+    color: theme.palette.dialog.titleColor,
+  })}>Upload Transactions via CSV</DialogTitle>
         <DialogContent>
           <Select
               fullWidth
@@ -1076,6 +1136,134 @@ if (isNaN(parsedDate.getTime())) {
           <Button onClick={handleCSVUpload} variant="contained" color="primary">Upload</Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={openWithdrawDialog} onClose={handleCloseWithdrawDialog} PaperProps={{
+  sx: (theme) => ({
+    width: '500px',
+    maxWidth: '90%',
+    fontSize: '12px',
+    height: '600px',
+    boxShadow: theme.palette.dialog.boxShadow,
+    background: theme.palette.dialog.backgroundColor,
+    border: theme.palette.mode === 'dark' ? '1px solid #3C3F4A' : '1px solid #ccc',
+    borderRadius: '12px',
+  }),
+}}
+sx={{
+  "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
+  "& .MuiPaper-root": {
+    backdropFilter: "blur(12px)",
+  },
+}}>
+  <DialogTitle sx={(theme) => ({
+          fontWeight: "bold",
+          textAlign: "center",
+    fontSize: '16px',
+    color: theme.palette.dialog.titleColor,
+  })}>Withdraw</DialogTitle>
+  <DialogContent sx={{ px: 2, py: 1, fontSize: '8px' }}>
+
+    {/* Account - Readonly */}
+    <TextField
+      label="Account"
+      fullWidth
+      margin="normal"
+      value={selectedTransaction?.account?.name || ""}
+      disabled
+      InputProps={{ readOnly: true }}
+      InputLabelProps={{ sx: inputLabelSx }}
+      sx={textFieldSx}
+    />
+
+    {/* Amount - Editable */}
+    <TextField
+      label="Amount"
+      name="amount"
+      type="number"
+      fullWidth
+      margin="normal"
+     value={
+  selectedTransaction?.saving?.currentValue > 0
+    ? selectedTransaction.saving.currentValue
+    : selectedTransaction?.saving?.amount || ""
+}
+      onChange={handleChange}
+      InputLabelProps={{ sx: inputLabelSx }}
+      sx={textFieldSx}
+    />
+
+    {/* Type - Readonly */}
+    <TextField
+      label="Type"
+      name="type"
+      fullWidth
+      margin="normal"
+      value={"WITHDRAW"}
+      disabled
+      InputProps={{ readOnly: true }}
+      InputLabelProps={{ sx: inputLabelSx }}
+      sx={textFieldSx}
+    />
+
+    {/* Category - Readonly */}
+    <TextField
+      label="Category"
+      name="category"
+      fullWidth
+      margin="normal"
+      value={selectedTransaction?.category || ""}
+      disabled
+      InputProps={{ readOnly: true }}
+      InputLabelProps={{ sx: inputLabelSx }}
+      sx={textFieldSx}
+    />
+
+    {/* Withdraw From - Readonly */}
+    <TextField
+      label="Withdraw From"
+      name="withdrawFrom"
+      fullWidth
+      margin="normal"
+      value={
+        selectedTransaction?.account?.name + " - " + selectedTransaction?.category + " - " + selectedTransaction?.amount || ""
+      }
+      disabled
+      InputProps={{ readOnly: true }}
+      InputLabelProps={{ sx: inputLabelSx }}
+      sx={textFieldSx}
+    />
+
+    {/* Description - Editable */}
+    <TextField
+      label="Description"
+      name="description"
+      fullWidth
+      margin="normal"
+      value={selectedTransaction?.description || ""}
+      onChange={handleChange}
+      InputLabelProps={{ sx: inputLabelSx }}
+      sx={textFieldSx}
+    />
+
+    {/* Transaction Date - Editable */}
+    <TextField
+      label="Transaction Date"
+      name="transactionDate"
+      type="datetime-local"
+      fullWidth
+      margin="normal"
+      value={selectedTransaction?.transactionDate || ""}
+      onChange={handleChange}
+      InputLabelProps={{shrink:true, sx: inputLabelSx }}
+      sx={textFieldSx}
+    />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleCloseWithdrawDialog}>Cancel</Button>
+    <Button onClick={handleSubmitWithdrawDialog} variant="contained" color="primary">Withdraw</Button>
+  </DialogActions>
+</Dialog>
+
     </Box>
 
     </Box>

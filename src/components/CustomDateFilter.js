@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import dayjs from "dayjs";
+import { useTheme } from "@mui/material/styles";
 
 export default function CustomDateFilter({ onApply, onCancel }) {
+  const theme = useTheme();
+  const pageBackground = theme.palette.background.gradient;
+  const isDark = theme.palette.mode === 'dark';
+
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
 
@@ -16,16 +21,17 @@ export default function CustomDateFilter({ onApply, onCancel }) {
         <Box 
         sx={{
             p: 2,
-            background: "#fff",
+            background:  theme.palette.filters.background,
+            border:'1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: "8px",
-            boxShadow: 3,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.8)',
             width: 170,
             zIndex: 10,
             position: "absolute", // Only needed if you want it to float
             top: "100%",           // Adjust based on trigger button
             right: 0               // Aligns it to the right
           }}>
-            <Typography variant="body1" sx={{ fontWeight: "bold", color: "blue", cursor: "pointer", mb: 1,fontSize:"12px" }} onClick={onCancel}>
+            <Typography variant="body1" sx={{ fontWeight: "bold", color: isDark ?"black":"blue", cursor: "pointer", mb: 1,fontSize:"12px" }} onClick={onCancel}>
                 - Clear Filter
             </Typography>
 

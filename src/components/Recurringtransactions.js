@@ -11,8 +11,7 @@ import { fetchAccounts } from "../features/accounts/accountSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { format,toZonedTime } from "date-fns-tz";
-
-const pageBackground = "linear-gradient(to bottom, #E3F2FD, #FCE4EC)";
+import { useTheme } from "@mui/material/styles";
 
 const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -52,6 +51,8 @@ const columns = [
   ];
   
 export default function RecurringTransaction(){
+  const theme = useTheme();
+  const pageBackground = theme.palette.background.gradient;
     const dispatch = useDispatch();
     const recurringTransactions = useSelector((state)=>state.recurringTransactions?.recurringTransactions) || [];
     const accounts = useSelector((state)=>state.account?.accounts) || [];
@@ -243,16 +244,30 @@ export default function RecurringTransaction(){
         </Button>
       </Box>
 
-      <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", borderRadius: "10px", overflow: "hidden",fontSize: "0.75rem",p:1 }}>
-        <TableContainer sx={{ flexGrow: 1, overflow: "auto",borderRadius: "10px" }}>
+      <Paper  sx={{
+    flexGrow: 1,
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: "10px",
+    overflow: "hidden",
+    fontSize: "0.75rem",
+    p: 1,
+    background: theme.palette.table.paperBackground,
+  }}>
+        <TableContainer sx={{
+    flexGrow: 1,
+    overflow: "auto",
+    borderRadius: "10px",
+    border: `1px solid ${theme.palette.table.borderColor}`,
+  }}>
         <Table stickyHeader size="small"> 
               <TableHead>
-              <TableRow sx={{ backgroundColor: "#1E88E5" }}>
+              <TableRow sx={{  backgroundColor: theme.palette.table.headerRow }}>
                   {columns.map((column) => (
                     <TableCell
                       key={column.id}
                       style={{ minWidth: column.minWidth }}
-                      sx={{ backgroundColor: "#3949ab", color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
+                      sx={{backgroundColor: theme.palette.table.tableCell, color: "white", fontWeight: "bold", textAlign: "left" ,fontSize: "0.7rem",py: 1}}
                     >
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       {column.label}
@@ -270,13 +285,15 @@ export default function RecurringTransaction(){
                       <TableRow
                         key={row.id}
                         hover
-                        sx={{
-                          backgroundColor: index % 2 === 0 ? "#f5f5f5" : "white",
-                          "&:hover": { backgroundColor: "#e3f2fd" },
-                        }}
+                        sx={{ borderColor: theme.palette.table.borderColor,backgroundColor: index % 2 === 0 ? (theme.palette.table.evenRow) : (theme.palette.table.oddRow), "&:hover": { backgroundColor:theme.palette.table.hoverColor}}}
                       >
                         {columns.map((column) => (
-                          <TableCell key={column.id} sx={{ fontSize: "0.65rem", py: 1 }}>
+                          <TableCell key={column.id} sx={{
+                            fontSize: "0.65rem",
+                            py: 1,
+                            borderBottom: `1px solid ${theme.palette.table.borderColor}`,
+                            color: theme.palette.table.textColor,
+                          }}>
                             {column.id === "actions" ? (
                               <>
                                 <Tooltip title="Edit">
@@ -336,14 +353,29 @@ export default function RecurringTransaction(){
         </Paper>
 
       <Dialog open={open} onClose={handleClose} PaperProps={{
-    sx: {
-      width: '500px', // adjust as needed
-      maxWidth: '90%', // responsive limit
-      fontSize: '12px',
-      height:'600px'
-    },
-  }}>
-         <DialogTitle sx={{ fontSize: '16px' }}>{isEditMode ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
+  sx: (theme) => ({
+    width: '500px',
+    maxWidth: '90%',
+    fontSize: '12px',
+    height: '600px',
+    boxShadow: theme.palette.dialog.boxShadow,
+    background: theme.palette.dialog.backgroundColor,
+    border: theme.palette.mode === 'dark' ? '1px solid #3C3F4A' : '1px solid #ccc',
+    borderRadius: '12px',
+  }),
+}}
+sx={{
+  "& .MuiBackdrop-root": { backdropFilter: "blur(8px)" },
+  "& .MuiPaper-root": {
+    backdropFilter: "blur(12px)",
+  },
+}}>
+         <DialogTitle sx={(theme) => ({
+          fontWeight: "bold",
+          textAlign: "center",
+    fontSize: '16px',
+    color: theme.palette.dialog.titleColor,
+  })}>{isEditMode ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
        <DialogContent sx={{ px: 2, fontSize: '8px' }}>
        <TextField
               select
